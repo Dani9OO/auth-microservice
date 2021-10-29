@@ -1,6 +1,6 @@
 {
   "watch": ["dist/**/*.js"],
   "execMap": {
-    "js": "node -r dotenv/config dist/server.js"
+    "js": "node -r dotenv/config -r source-map-support/register dist/server.js"
   }
 }
