@@ -2,6 +2,13 @@ import { getModelForClass, prop, Ref } from '@typegoose/typegoose'
 import { Role } from '../role/role.model'
 import { ServiceUser } from './service-user.model'
 
+class ApiKey {
+  @prop()
+  public prefix!: string
+
+  @prop()
+  public key!: string
+}
 export class Service {
   @prop({ unique: true })
   public name!: string
@@ -11,6 +18,9 @@ export class Service {
 
   @prop({ ref: () => ServiceUser, required: true })
   public users?: Ref<ServiceUser>[]
+
+  @prop({ type: () => ApiKey })
+  public apiKey!: ApiKey
 }
 
 export const ServiceModel = getModelForClass(Service)
