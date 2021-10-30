@@ -3,11 +3,15 @@ import randomatic from 'randomatic'
 import { join, resolve } from 'path'
 import { mkdir, writeFile } from 'fs/promises'
 import generateKeypair from '../common/functions/generate-keypair.function'
-import { ServiceDTO } from './service.dto'
+import { CreateServiceInput } from './service.inputs'
 import { hash } from 'argon2'
 
 export class ServiceController {
-  public createService = async (service: ServiceDTO) => {
+  public static queryServices = async () => {
+    return await ServiceModel.find()
+  }
+
+  public static createService = async (service: CreateServiceInput) => {
     const [prefix, key] = [randomatic('Aa0', 7), randomatic('Aa00!!', 32)]
     const apiKey = `${prefix}.${key}`
     const hashedKey = await hash(key)
@@ -20,6 +24,6 @@ export class ServiceController {
     await writeFile(join(path, 'private.pem'), privateKey)
     await writeFile(join(path, 'public.pem'), publicKey)
     await writeFile(join(path, '.env'), `KEY_PASSPHRASE=${passphrase}\nAUTH_API_KEY=${apiKey}`)
-    return { apiKey, passphrase, publicKey }
+    return { _id: s._id, apiKey, passphrase, publicKey }
   }
 }
