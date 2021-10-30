@@ -3,13 +3,12 @@ import randomatic from 'randomatic'
 import { join, resolve } from 'path'
 import { mkdir, writeFile } from 'fs/promises'
 import generateKeypair from '../common/functions/generate-keypair.function'
-import { randomBytes } from 'crypto'
 import { ServiceDTO } from './service.dto'
 import { hash } from 'argon2'
 
 export class ServiceController {
   public createService = async (service: ServiceDTO) => {
-    const [prefix, key] = [randomBytes(7), randomBytes(32)]
+    const [prefix, key] = [randomatic('Aa0', 7), randomatic('Aa00!!', 32)]
     const apiKey = `${prefix}.${key}`
     const hashedKey = await hash(key)
     const s = await ServiceModel.create({ ...service, apiKey: { prefix, key: hashedKey } })
