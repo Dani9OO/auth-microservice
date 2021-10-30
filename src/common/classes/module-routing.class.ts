@@ -1,6 +1,6 @@
 import { Router } from 'express'
 
-export class RoutingController {
+export class ModuleRouting {
   public readonly path!: string
 
   public readonly router!: Router
