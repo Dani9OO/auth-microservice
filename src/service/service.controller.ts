@@ -33,4 +33,8 @@ export class ServiceController {
     while (prefixes.some(p => p === prefix)) prefix = randomatic('Aa0', 7)
     return prefix
   }
+
+  public static findServiceByPrefix = async (prefix: string) => {
+    return await ServiceModel.findOne({ 'apiKey.prefix': prefix })
+  }
 }
