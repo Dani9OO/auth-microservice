@@ -12,7 +12,7 @@ export class ServiceController {
   }
 
   public static createService = async (service: CreateServiceInput) => {
-    const [prefix, key] = [randomatic('Aa0', 7), randomatic('Aa00!!', 32)]
+    const [prefix, key] = [this.getUniquePrefix(), randomatic('Aa00!!', 32)]
     const apiKey = `${prefix}.${key}`
     const hashedKey = await hash(key)
     const s = await ServiceModel.create({ ...service, apiKey: { prefix, key: hashedKey } })
@@ -25,5 +25,12 @@ export class ServiceController {
     await writeFile(join(path, 'public.pem'), publicKey)
     await writeFile(join(path, '.env'), `KEY_PASSPHRASE=${passphrase}\nAUTH_API_KEY=${apiKey}`)
     return { _id: s._id, apiKey, passphrase, publicKey }
+  }
+
+  private static getUniquePrefix = async () => {
+    const prefixes = (await ServiceModel.find()).map(s => s.apiKey.prefix)
+    let prefix = randomatic('Aa0', 7)
+    while (prefixes.some(p => p === prefix)) prefix = randomatic('Aa0', 7)
+    return prefix
   }
 }
