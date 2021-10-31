@@ -6,6 +6,7 @@ import { handleServerError } from '../common/utils/handle-server-error.util'
 import { ServiceController } from './service.controller'
 import { CreateServiceInput } from './service.inputs'
 import { handleValidationError } from '../common/utils/handle-validation-error.util'
+import { authAdmin } from '../common/middleware/auth-admin.middleware'
 
 export class ServiceRouting implements ModuleRouting {
   public readonly path = '/service'
@@ -17,8 +18,8 @@ export class ServiceRouting implements ModuleRouting {
   }
 
   private initRoutes () {
-    this.router.get(`${this.path}/`, this.queryServices)
-    this.router.post(`${this.path}/`, this.createService)
+    this.router.get(`${this.path}/`, authAdmin, this.queryServices)
+    this.router.post(`${this.path}/`, authAdmin, this.createService)
   }
 
   private queryServices = async (request: Request, response: Response) => {
