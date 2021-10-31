@@ -4,7 +4,7 @@ import { UnauthenticatedError } from '../errors/unauthenticated.error'
 import { ForbiddenError } from '../errors/forbidden.error'
 import { verify } from 'argon2'
 
-export default async (request: Request, response: Response, next: NextFunction) => {
+export const auth = async (request: Request, response: Response, next: NextFunction) => {
   const authHeader = request.header('X-API-KEY')
   if (!authHeader) return response.status(401).json(new UnauthenticatedError(request.ip, request.hostname, request.originalUrl).respond())
   const [prefix, key] = [authHeader.slice(0, 6), authHeader.slice(7)]
