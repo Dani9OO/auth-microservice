@@ -38,7 +38,7 @@ export class User {
   public updated!: Date
 
   @prop({ ref: () => Service })
-  public registeredBy?: Ref<Service>
+  public registeredBy!: Ref<Service>
 }
 
 export const UserModel = getModelForClass(User)
