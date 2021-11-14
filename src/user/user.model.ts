@@ -10,31 +10,31 @@ import { VerificationToken } from './verification-token.model'
 })
 export class User {
   @prop()
-  forename!: string
+  public forename!: string
 
   @prop()
-  surname!: string
+  public surname!: string
 
   @prop({ unique: true })
-  email!: string
+  public email!: string
 
   @prop()
-  username!: string
+  public username!: string
 
   @prop()
-  password!: string
+  public password!: string
 
   @prop({ ref: () => VerificationToken })
-  verificationToken?: Ref<VerificationToken>
+  public verificationToken?: Ref<VerificationToken>
 
   @prop({ ref: () => ResetToken })
-  resetToken?: Ref<ResetToken>
+  public resetToken?: Ref<ResetToken>
 
   @prop({ default: Date.now() })
-  created!: Date
+  public created!: Date
 
   @prop({ default: Date.now() })
-  updated!: Date
+  public updated!: Date
 }
 
 export const UserModel = getModelForClass(User)
