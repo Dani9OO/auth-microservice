@@ -37,4 +37,12 @@ export class ServiceController {
   public static findServiceByPrefix = async (prefix: string) => {
     return await ServiceModel.findOne({ 'apiKey.prefix': prefix })
   }
+
+  public static addUserToService = async (user: string, service: string) => {
+    return await ServiceModel.findByIdAndUpdate(service, { $push: { users: user } })
+  }
+
+  public static removeUserFromService = async (user: string, service: string) => {
+    return await ServiceModel.findByIdAndUpdate(service, { $pull: { users: user } })
+  }
 }
