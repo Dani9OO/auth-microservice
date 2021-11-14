@@ -1,6 +1,7 @@
 import { getModelForClass, prop, Ref, modelOptions } from '@typegoose/typegoose'
 import { ResetToken } from './reset-token.model'
 import { VerificationToken } from './verification-token.model'
+import { Service } from '../service/service.model'
 
 @modelOptions({
   schemaOptions: {
@@ -35,6 +36,9 @@ export class User {
 
   @prop({ default: Date.now() })
   public updated!: Date
+
+  @prop({ ref: () => Service })
+  public registeredBy?: Ref<Service>
 }
 
 export const UserModel = getModelForClass(User)
