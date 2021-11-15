@@ -1,4 +1,5 @@
-import { prop, Ref } from '@typegoose/typegoose'
+import { prop, Ref, getModelForClass } from '@typegoose/typegoose'
+import { Types } from 'mongoose'
 import { Service } from '../service/service.model'
 
 export class Module {
@@ -9,5 +10,7 @@ export class Module {
   public name!: string
 
   @prop()
-  public permissions!: string[]
+  public permissions!: Types.Array<string>
 }
+
+export const ModuleModel = getModelForClass(Module)
