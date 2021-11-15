@@ -1,7 +1,7 @@
 export class ResponseError extends Error {
   constructor (
     public message: string,
-    public response: string
+    public response?: string
   ) {
     super(message)
     this.message = message
@@ -11,7 +11,7 @@ export class ResponseError extends Error {
   public respond () {
     return {
       success: false,
-      message: this.response
+      message: this.response || this.message
     }
   }
 }
