@@ -1,12 +1,12 @@
 import cors from 'cors'
 import { json } from 'body-parser'
 import express, { Application, urlencoded } from 'express'
-import { ModuleRouting } from './common/classes/module-routing.class'
+import { Routing } from './common/classes/routing.class'
 export class App {
   private app: Application
 
   constructor (
-    private routers: ModuleRouting[]
+    private routers: Routing[]
   ) {
     this.app = express()
     this.initMiddleware()
