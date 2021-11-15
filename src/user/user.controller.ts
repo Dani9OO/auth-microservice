@@ -9,4 +9,8 @@ export class UserController {
     const s = await ServiceController.addUserToService(u._id.valueOf(), service)
     return { user: u, service: s }
   }
+
+  public static findUserByEmail = async (email: string) => {
+    return await UserModel.findOne({ email })
+  }
 }
