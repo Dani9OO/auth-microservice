@@ -4,20 +4,29 @@ import { securePassword } from '../common/constants/secure-password.regexp'
 
 export class CreateUserInput implements Partial<User> {
   @IsEmail()
-  email!: string
+  public email!: string
 
   @IsString()
   @IsNotEmpty()
-  forename!: string
+  public forename!: string
 
   @IsString()
   @IsNotEmpty()
-  surname!: string
+  public surname!: string
 
   @IsString()
   @IsNotEmpty()
-  username!: string
+  public username!: string
 
   @Matches(securePassword)
-  password!: string
+  public password!: string
+}
+
+export class AuthenticateUserInput {
+  @IsEmail()
+  public email!: string
+
+  @IsString()
+  @IsNotEmpty()
+  public password!: string
 }
