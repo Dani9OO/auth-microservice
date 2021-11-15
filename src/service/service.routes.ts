@@ -1,19 +1,20 @@
 import { plainToClass } from 'class-transformer'
 import { validate } from 'class-validator'
 import { Request, Response, Router } from 'express'
-import { ModuleRouting } from '../common/classes/module-routing.class'
+import { Routing } from '../common/classes/routing.class'
 import { handleServerError } from '../common/utils/handle-server-error.util'
 import { ServiceController } from './service.controller'
 import { CreateServiceInput } from './service.inputs'
 import { handleValidationError } from '../common/utils/handle-validation-error.util'
 import { authAdmin } from '../common/middleware/auth-admin.middleware'
 
-export class ServiceRouting implements ModuleRouting {
-  public readonly path = '/service'
+export class ServiceRouting extends Routing {
+  public readonly resource = 'Service'
 
   public readonly router = Router()
 
   constructor () {
+    super()
     this.initRoutes()
   }
 
