@@ -1,6 +1,6 @@
 import { prop, Ref, getModelForClass } from '@typegoose/typegoose'
-import { Types } from 'mongoose'
 import { Service } from '../service/service.model'
+import { Permission } from '../permissions/permission.model'
 
 export class Module {
   @prop({ ref: () => Service, required: true })
@@ -9,8 +9,8 @@ export class Module {
   @prop()
   public name!: string
 
-  @prop()
-  public permissions!: Types.Array<string>
+  @prop({ ref: () => Permission })
+  public permissions!: Ref<Permission>[]
 }
 
 export const ModuleModel = getModelForClass(Module)
