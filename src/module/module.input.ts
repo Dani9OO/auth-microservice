@@ -20,11 +20,4 @@ export class UpdateModuleInput {
   @IsString()
   @IsNotEmpty()
   public name!: string
-
-  @IsOptional()
-  @IsArray()
-  @ArrayMinSize(1)
-  @IsString({ each: true })
-  @IsNotEmpty({ each: true })
-  public permissions!: string[]
 }
