@@ -1,0 +1,21 @@
+import { CreatePermissionInput, UpdatePermissionInput } from './permission.input'
+import { PermissionModel } from './permission.model'
+import { ModuleController } from '../module/module.controller'
+export class PermissionController {
+  public static createPermission = async (permission: CreatePermissionInput, service: string) => {
+    await ModuleController.findModule(permission.module, service)
+    const p = await PermissionModel.create(permission)
+    await ModuleController.addPermissionToModule(permission.module, p._id.valueOf())
+    return p
+  }
+
+  public static updatePermission = async (permission: UpdatePermissionInput, service: string) => {
+    await ModuleController.findModule(permission.module!, service)
+    return await PermissionModel.findByIdAndUpdate(permission._id, { name: permission.name })
+  }
+
+  public static deletePermission = async (_id: string, service: string) => {
+    await ModuleController.findModule(_id, service)
+    return await PermissionModel.findByIdAndDelete(_id)
+  }
+}
