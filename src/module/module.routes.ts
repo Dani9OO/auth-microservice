@@ -7,7 +7,7 @@ import { handleValidationError } from '../common/utils/handle-validation-error.u
 import { handleServerError } from '../common/utils/handle-server-error.util'
 import { ModuleController } from './module.controller'
 import { auth } from '../common/middleware/auth-service.middleware'
-import MongoId from '../common/validators/mongo-id.input'
+import MongoIdInput from '../common/validators/mongo-id.input'
 
 export class ModuleRouting extends Routing {
   public readonly resource = 'Module'
@@ -51,7 +51,7 @@ export class ModuleRouting extends Routing {
 
   private delete = async (request: Request, response: Response) => {
     try {
-      const data = plainToClass(MongoId, request.params)
+      const data = plainToClass(MongoIdInput, request.params)
       const errors = await validate(data, { validationError: { target: false }, forbidUnknownValues: true })
       if (errors.length > 0) return response.status(400).json(handleValidationError(errors))
       const m = await ModuleController.deleteModule(request.service._id, data._id!)
