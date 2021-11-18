@@ -1,0 +1,22 @@
+import { CreatePolicyInput, UpdatePolicyInput } from './policy.input'
+import { PolicyModel } from './policy.model'
+import { Types } from 'mongoose'
+import { NotFoundError } from '../common/errors/not-found.error'
+export class PolicyController {
+  public static createPolicy = async (policy: CreatePolicyInput, service: string) => {
+    return await PolicyModel.create({ ...policy, service })
+  }
+
+  public static updatePolicy = async (policy: UpdatePolicyInput, service: string) => {
+    const p = await PolicyModel.findOne({ _id: policy._id, service })
+    if (!p) throw new NotFoundError('Policy', { name: '_id', value: policy._id! })
+    if (policy.permissions) p.permissions = policy.permissions.map(p => new Types.ObjectId(p))
+    if (policy.name && p.name !== policy.name) p.name = policy.name
+    await p.save()
+    return p
+  }
+
+  public static deletePolicy = async (_id: string, service: string) => {
+    return await PolicyModel.findOneAndDelete({ _id, service })
+  }
+}
