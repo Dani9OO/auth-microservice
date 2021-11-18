@@ -1,10 +1,10 @@
 import { prop, Ref } from '@typegoose/typegoose'
-import { PolicyPermissions } from './policy-permissions.model'
+import { Permission } from '../permissions/permission.model'
 
 export class Policy {
   @prop()
   public name!: string
 
-  @prop({ ref: () => PolicyPermissions, required: true })
-  public permissions!: Ref<PolicyPermissions>[]
+  @prop({ ref: () => Permission, required: true })
+  public permissions!: Ref<Permission>[]
 }
