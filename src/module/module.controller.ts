@@ -3,6 +3,10 @@ import { ModuleModel } from './module.model'
 import { NotFoundError } from '../common/errors/not-found.error'
 import { PermissionController } from '../permissions/permission.controller'
 export class ModuleController {
+  public static getModules = async (service: string) => {
+    return await ModuleModel.find({ service }).sort({ name: 'asc' }).populate('permissions').lean()
+  }
+
   public static findModule = async (m: string, service: string) => {
     const moduleDoc = await ModuleModel.findOne({ _id: m, service }).lean()
     if (!moduleDoc) throw new NotFoundError('Module', { name: '_id', value: m })
