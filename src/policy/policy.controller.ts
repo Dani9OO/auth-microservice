@@ -3,6 +3,10 @@ import { PolicyModel } from './policy.model'
 import { Types } from 'mongoose'
 import { NotFoundError } from '../common/errors/not-found.error'
 export class PolicyController {
+  public static getPolicies = async (service: string) => {
+    return await PolicyModel.find({ service }).sort({ name: 'asc' }).populate({ path: 'permissions', populate: { path: 'module' } }).lean()
+  }
+
   public static createPolicy = async (policy: CreatePolicyInput, service: string) => {
     return await PolicyModel.create({ ...policy, service })
   }

@@ -6,7 +6,7 @@ import { auth } from '../common/middleware/auth-service.middleware'
 import { handleServerError } from '../common/utils/handle-server-error.util'
 import { handleValidationError } from '../common/utils/handle-validation-error.util'
 import MongoIdInput from '../common/validators/mongo-id.input'
-import { PolicyController } from './policy.controller'
+import { PolicyController } from './policy.controller';
 import { CreatePolicyInput, UpdatePolicyInput } from './policy.input'
 export class PolicyRouting extends Routing {
   public readonly resource = 'Policy'
@@ -20,6 +20,7 @@ export class PolicyRouting extends Routing {
 
   private initRoutes () {
     this.router.post(`${this.path}/`, auth, this.create)
+    this.router.get(`${this.path}/`, auth, this.read)
     this.router.put(`${this.path}/:_id`, auth, this.update)
     this.router.delete(`${this.path}/:_id`, auth, this.delete)
   }
@@ -33,6 +34,15 @@ export class PolicyRouting extends Routing {
       const message = `Policy ${data.name} successfully created`
       console.log(message)
       return response.status(200).json({ success: true, result: p, message })
+    } catch (error) { return response.status(500).json(handleServerError(error)) }
+  }
+
+  private read = async (request: Request, response: Response) => {
+    try {
+      const policies = await PolicyController.getPolicies(request.service._id)
+      const message = `Successfully queried ${policies.length} Policies`
+      console.log(message)
+      return response.status(200).json({ success: true, result: policies, message })
     } catch (error) { return response.status(500).json(handleServerError(error)) }
   }
 
