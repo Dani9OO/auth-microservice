@@ -7,7 +7,7 @@ import { handleServerError } from '../common/utils/handle-server-error.util'
 import { handleValidationError } from '../common/utils/handle-validation-error.util'
 import MongoIdInput from '../common/validators/mongo-id.input'
 import { PolicyController } from './policy.controller';
-import { CreatePolicyInput, UpdatePolicyInput } from './policy.input'
+import { CreatePolicyInput, UpdatePolicyInput } from './policy.inputs'
 export class PolicyRouting extends Routing {
   public readonly resource = 'Policy'
 

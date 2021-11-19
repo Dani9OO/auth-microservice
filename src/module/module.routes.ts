@@ -1,6 +1,6 @@
 import { Router, Response, Request } from 'express'
 import { Routing } from '../common/classes/routing.class'
-import { CreateModuleInput, UpdateModuleInput } from './module.input'
+import { CreateModuleInput, UpdateModuleInput } from './module.inputs'
 import { plainToClass } from 'class-transformer'
 import { validate } from 'class-validator'
 import { handleValidationError } from '../common/utils/handle-validation-error.util'
