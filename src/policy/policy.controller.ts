@@ -1,4 +1,4 @@
-import { CreatePolicyInput, UpdatePolicyInput } from './policy.input'
+import { CreatePolicyInput, UpdatePolicyInput } from './policy.inputs'
 import { PolicyModel } from './policy.model'
 import { Types } from 'mongoose'
 import { NotFoundError } from '../common/errors/not-found.error'

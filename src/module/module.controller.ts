@@ -1,4 +1,4 @@
-import { CreateModuleInput, UpdateModuleInput } from './module.input'
+import { CreateModuleInput, UpdateModuleInput } from './module.inputs'
 import { ModuleModel } from './module.model'
 import { NotFoundError } from '../common/errors/not-found.error'
 import { PermissionController } from '../permissions/permission.controller'
