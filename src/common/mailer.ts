@@ -3,7 +3,7 @@ import { createTransport, Transporter } from 'nodemailer'
 export class Mailer {
   private _transporter: Transporter
 
-  constructor (host: string, port: number, auth: { user: string, password: string }) {
+  constructor (host: string, port: number, auth: { user: string, pass: string }) {
     this._transporter = createTransport({ port, host, secure: true, auth })
   }
 

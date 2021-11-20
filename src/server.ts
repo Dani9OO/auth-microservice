@@ -17,7 +17,7 @@ import { UserRouting } from './user/user.routes'
   const database = new Database()
   await database.init(env.db.uri)
 
-  const mailer = new Mailer(env.smtp.host, env.smtp.port, { user: env.smtp.user, password: env.smtp.pass })
+  const mailer = new Mailer(env.smtp.host, env.smtp.port, { user: env.smtp.user, pass: env.smtp.pass })
   await mailer.verify()
 
   const mod = new ModuleRouting()
