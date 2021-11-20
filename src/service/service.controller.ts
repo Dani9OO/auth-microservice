@@ -1,7 +1,7 @@
 import { ServiceModel } from './service.model'
 import randomatic from 'randomatic'
 import { join, resolve } from 'path'
-import { mkdir, writeFile } from 'fs/promises'
+import { mkdir, writeFile, readFile, chmod } from 'fs/promises'
 import generateKeypair from '../common/functions/generate-keypair.function'
 import { CreateServiceInput } from './service.inputs'
 import { hash } from 'argon2'
@@ -25,11 +25,30 @@ export class ServiceController {
     const passphrase = randomatic('Aa00!!', 16)
     const { publicKey, privateKey } = await generateKeypair(passphrase)
     const path = join(resolve(process.cwd()), 'keys', s.id)
+    const paths = {
+      private: join(path, 'private.pem'),
+      public: join(path, 'public.pem'),
+      passphrase: join(path, 'passphrase'),
+      api: join(path, 'apikey')
+    }
     await mkdir(path, { recursive: true })
-    await writeFile(join(path, 'private.pem'), privateKey)
-    await writeFile(join(path, 'public.pem'), publicKey)
-    await writeFile(join(path, 'passpharse'), passphrase)
+    await Promise.all([
+      writeFile(paths.private, privateKey),
+      writeFile(paths.public, publicKey),
+      writeFile(paths.passphrase, passphrase),
+      writeFile(paths.api, apiKey)
+    ])
+    await Promise.all([
+      chmod(paths.private, 0o700),
+      chmod(paths.public, 0o700),
+      chmod(paths.passphrase, 0o700),
+      chmod(paths.api, 0o700)
+    ])
     return { _id: s._id, apiKey, passphrase, publicKey }
+  }
+
+  public static authToService = async (service: string) => {
+    return await readFile(join(resolve(process.cwd()), 'keys', service, 'apikey'))
   }
 
   private static getUniquePrefix = async () => {
@@ -80,7 +99,7 @@ export class ServiceController {
     if (isDocumentArray(u.roles)) {
       u.roles.forEach(r => {
         if (isDocumentArray(r.policies)) {
-          r.policies.forEach(p => { if(!policiesWithNoDuplicates[p._id]) policiesWithNoDuplicates[p._id] = p })
+          r.policies.forEach(p => { if (!policiesWithNoDuplicates[p._id]) policiesWithNoDuplicates[p._id] = p })
         }
       })
     }
