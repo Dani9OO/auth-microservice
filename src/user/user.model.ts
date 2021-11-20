@@ -38,7 +38,15 @@ export class User {
   public updated!: Date
 
   @prop({ ref: () => Service })
-  public registeredBy!: Ref<Service>
+  public services!: Ref<Service>[]
+
+  public get identity () {
+    return {
+      name: `${this.forename} ${this.surname}`,
+      email: this.email,
+      username: this.username
+    }
+  }
 }
 
 export const UserModel = getModelForClass(User)
