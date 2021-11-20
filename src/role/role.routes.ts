@@ -6,9 +6,9 @@ import { auth } from '../common/middleware/auth-service.middleware'
 import { handleServerError } from '../common/utils/handle-server-error.util'
 import { handleValidationError } from '../common/utils/handle-validation-error.util'
 import MongoIdInput from '../common/validators/mongo-id.input'
-import { RoleController } from './role.controller';
+import { RoleController } from './role.controller'
 import { CreateRoleInput, UpdateRoleInput } from './role.inputs'
-import { NotFoundError } from '../common/errors/not-found.error';
+import { NotFoundError } from '../common/errors/not-found.error'
 export class RoleRouting extends Routing {
   public readonly resource = 'Role'
 
