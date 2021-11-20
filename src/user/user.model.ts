@@ -1,4 +1,4 @@
-import { getModelForClass, prop, Ref, modelOptions } from '@typegoose/typegoose'
+import { prop, Ref, modelOptions } from '@typegoose/typegoose'
 import { ResetToken } from './reset-token.model'
 import { VerificationToken } from './verification-token.model'
 import { Service } from '../service/service.model'
@@ -48,5 +48,3 @@ export class User {
     }
   }
 }
-
-export const UserModel = getModelForClass(User)

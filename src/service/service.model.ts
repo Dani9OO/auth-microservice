@@ -1,4 +1,4 @@
-import { getModelForClass, prop, Ref } from '@typegoose/typegoose'
+import { prop, Ref } from '@typegoose/typegoose'
 import { Role } from '../role/role.model'
 import { ServiceUser } from './service-user.model'
 
@@ -22,5 +22,3 @@ export class Service {
   @prop({ type: () => ApiKey })
   public apiKey!: ApiKey
 }
-
-export const ServiceModel = getModelForClass(Service)

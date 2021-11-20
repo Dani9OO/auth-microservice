@@ -1,7 +1,7 @@
 import { CreateRoleInput, UpdateRoleInput } from './role.inputs'
-import { RoleModel } from './role.model'
 import { Types } from 'mongoose'
 import { NotFoundError } from '../common/errors/not-found.error'
+import { RoleModel } from '../common/models'
 export class RoleController {
   public static getRoles = async (service: string) => {
     return await RoleModel.find({ service }).sort({ name: 'asc' }).lean()

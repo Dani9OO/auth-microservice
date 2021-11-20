@@ -1,4 +1,4 @@
-import { prop, getModelForClass, Ref } from '@typegoose/typegoose'
+import { prop, Ref } from '@typegoose/typegoose'
 import { Module } from '../module/module.model'
 
 export class Permission {
@@ -9,4 +9,4 @@ export class Permission {
   public module!: Ref<Module>
 }
 
-export const PermissionModel = getModelForClass(Permission)
+// export const PermissionModel = getModelForClass(Permission)

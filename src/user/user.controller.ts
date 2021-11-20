@@ -1,13 +1,12 @@
-import { RefreshTokenModel } from './refresh-token.model';
 import { hash } from 'argon2'
 import { CreateUserInput } from './user.inputs'
-import { UserModel } from './user.model'
 import { ServiceController } from '../service/service.controller'
 import { NotFoundError } from '../common/errors/not-found.error'
 import { resolve, join } from 'path'
 import { readFile } from 'fs/promises'
 import { sign } from 'jsonwebtoken'
 import { randomBytes } from 'crypto'
+import { UserModel, RefreshTokenModel } from '../common/models'
 export class UserController {
   public static createUser = async (user: CreateUserInput, service: string) => {
     await ServiceController.validateDefaultRolesExist(service)

@@ -1,15 +1,14 @@
-import { ServiceModel } from './service.model'
 import randomatic from 'randomatic'
 import { join, resolve } from 'path'
 import { mkdir, writeFile, readFile, chmod } from 'fs/promises'
 import generateKeypair from '../common/functions/generate-keypair.function'
 import { CreateServiceInput } from './service.inputs'
 import { hash } from 'argon2'
-import { ServiceUserModel } from './service-user.model'
 import { NotFoundError } from '../common/errors/not-found.error'
 import { ResponseError } from '../common/errors/response.error'
 import { isDocumentArray, DocumentType, isDocument } from '@typegoose/typegoose'
 import { Policy } from '../policy/policy.model'
+import { ServiceModel, ServiceUserModel } from '../common/models'
 
 export class ServiceController {
   public static queryServices = async () => {

@@ -1,6 +1,6 @@
 import { CreatePermissionInput, UpdatePermissionInput } from './permission.input'
-import { PermissionModel } from './permission.model'
 import { ModuleController } from '../module/module.controller'
+import { PermissionModel } from '../common/models'
 export class PermissionController {
   public static createPermission = async (permission: CreatePermissionInput, service: string, skipValidation?: boolean) => {
     if (!skipValidation) await ModuleController.findModule(permission.module, service)

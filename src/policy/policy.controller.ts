@@ -1,7 +1,7 @@
 import { CreatePolicyInput, UpdatePolicyInput } from './policy.inputs'
-import { PolicyModel } from './policy.model'
 import { Types } from 'mongoose'
 import { NotFoundError } from '../common/errors/not-found.error'
+import { PolicyModel } from '../common/models'
 export class PolicyController {
   public static getPolicies = async (service: string) => {
     return await PolicyModel.find({ service }).sort({ name: 'asc' }).populate({ path: 'permissions', populate: { path: 'module' } }).lean()
