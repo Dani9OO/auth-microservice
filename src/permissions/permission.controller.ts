@@ -5,7 +5,7 @@ export class PermissionController {
   public static createPermission = async (permission: CreatePermissionInput, service: string, skipValidation?: boolean) => {
     if (!skipValidation) await ModuleController.findModule(permission.module, service)
     const p = await PermissionModel.create(permission)
-    if (!skipValidation) await ModuleController.addPermissionToModule(permission.module, p._id.valueOf())
+    if (!skipValidation) await ModuleController.addPermissionToModule(permission.module, p.id)
     return p.toObject()
   }
 

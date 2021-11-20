@@ -15,8 +15,8 @@ export class ModuleController {
 
   public static createModule = async (service: string, m: CreateModuleInput) => {
     const moduleDoc = await ModuleModel.create({ service, name: m.name })
-    const permissions = await Promise.all(m.permissions.map(p => PermissionController.createPermission({ module: moduleDoc._id.valueOf(), name: p }, service, true)))
-    moduleDoc.permissions = permissions.map(p => p._id.valueOf())
+    const permissions = await Promise.all(m.permissions.map(p => PermissionController.createPermission({ module: moduleDoc.id, name: p }, service, true)))
+    moduleDoc.permissions = permissions.map(p => p.id)
     await moduleDoc.save()
     return moduleDoc
   }

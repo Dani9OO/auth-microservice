@@ -11,6 +11,6 @@ export const auth = async (request: Request, response: Response, next: NextFunct
   const service = await ServiceController.findServiceByPrefix(prefix)
   if (!service) return response.status(403).json(new ForbiddenError(request.ip, request.originalUrl).respond())
   if (!(await verify(service.apiKey.key, key))) return response.status(403).json(new ForbiddenError(request.ip, request.originalUrl).respond())
-  request.service = { _id: service._id.valueOf(), name: service.name }
+  request.service = { _id: service.id, name: service.name }
   next()
 }
