@@ -2,6 +2,7 @@ import cors from 'cors'
 import { json } from 'body-parser'
 import express, { Application, urlencoded } from 'express'
 import { Routing } from './common/classes/routing.class'
+import cookieParser from 'cookie-parser'
 export class App {
   private app: Application
 
@@ -22,6 +23,7 @@ export class App {
     this.app.use(json())
     this.app.use(urlencoded({ extended: true }))
     this.app.use(cors({ exposedHeaders: ['X-API-KEY'] }))
+    this.app.use(cookieParser())
   }
 
   private initRouters () {
