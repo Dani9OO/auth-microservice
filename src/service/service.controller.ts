@@ -1,11 +1,15 @@
 import { ServiceModel } from './service.model'
 import randomatic from 'randomatic'
 import { join, resolve } from 'path'
-import { mkdir, readFile, writeFile } from 'fs/promises'
+import { mkdir, writeFile } from 'fs/promises'
 import generateKeypair from '../common/functions/generate-keypair.function'
 import { CreateServiceInput } from './service.inputs'
 import { hash } from 'argon2'
-import { sign } from 'jsonwebtoken'
+import { ServiceUserModel } from './service-user.model'
+import { NotFoundError } from '../common/errors/not-found.error'
+import { ResponseError } from '../common/errors/response.error'
+import { isDocumentArray, DocumentType, isDocument } from '@typegoose/typegoose'
+import { Policy } from '../policy/policy.model'
 
 export class ServiceController {
   public static queryServices = async () => {
@@ -20,7 +24,7 @@ export class ServiceController {
     if (!s) throw new Error('Failed to create a new service due to an unexpected server error')
     const passphrase = randomatic('Aa00!!', 16)
     const { publicKey, privateKey } = await generateKeypair(passphrase)
-    const path = join(resolve(process.cwd()), 'keys', s._id.valueOf())
+    const path = join(resolve(process.cwd()), 'keys', s.id)
     await mkdir(path, { recursive: true })
     await writeFile(join(path, 'private.pem'), privateKey)
     await writeFile(join(path, 'public.pem'), publicKey)
@@ -40,21 +44,56 @@ export class ServiceController {
   }
 
   public static addUserToService = async (user: string, service: string) => {
-    return await ServiceModel.findByIdAndUpdate(service, { $push: { users: user } })
+    const s = await ServiceModel.findById(service)
+    if (!s) throw new NotFoundError('Service', { name: '_id', value: service })
+    return await ServiceUserModel.create({ user, roles: s.defaultRoles })
   }
 
   public static removeUserFromService = async (user: string, service: string) => {
-    return await ServiceModel.findByIdAndUpdate(service, { $pull: { users: user } })
+    const u = await ServiceUserModel.findOneAndDelete({ user, service })
+    if (!u) throw new NotFoundError('User Service', { name: 'user, service', value: `${user}", "${service}` })
+    await ServiceModel.findByIdAndUpdate(service, { $pull: { users: u.id } })
+    return u.toObject()
   }
 
-  public static findUserInService = async (user: string, service: string) => {
-    return await ServiceModel.findOne({ _id: service, users: user })
+  public static validateDefaultRolesExist = async (_id: string) => {
+    const service = await ServiceModel.findById(_id).lean()
+    if (!service) throw new NotFoundError('Service', { name: '_id', value: _id })
+    if (!service.defaultRoles || !(service.defaultRoles.length > 0)) throw new ResponseError('Default service roles must be defined before registering an user')
   }
 
-  public static signToken = async (payload: string | object | Buffer, service: string) => {
-    const path = join(resolve(process.cwd()), 'keys', service)
-    const key = await readFile(join(path, 'private.pem'))
-    const passphrase = (await readFile(join(path, 'passphrase'))).toString()
-    return sign(payload, { key, passphrase }, { expiresIn: '1h', algorithm: 'RS256' })
+  public static validateUserService = async (user: string, service: string) => {
+    const u = await ServiceUserModel.findOne({ user, service }).populate({
+      path: 'roles',
+      populate: {
+        path: 'policies',
+        populate: {
+          path: 'permissions',
+          populate: {
+            path: 'module'
+          }
+        }
+      }
+    })
+    if (!u) throw new NotFoundError('User Service', { name: 'user, service', value: `${user}", "${service}` })
+    const policiesWithNoDuplicates: { [k: string]: DocumentType<Policy> } = {}
+    if (isDocumentArray(u.roles)) {
+      u.roles.forEach(r => {
+        if (isDocumentArray(r.policies)) {
+          r.policies.forEach(p => { if(!policiesWithNoDuplicates[p._id]) policiesWithNoDuplicates[p._id] = p })
+        }
+      })
+    }
+    const permissions: string[] = []
+    Object.values(policiesWithNoDuplicates).forEach(pol => {
+      if (isDocumentArray(pol.permissions)) {
+        pol.permissions.forEach(p => {
+          if (isDocument(p.module)) {
+            permissions.push(`${p.module.name}.${p.name}`)
+          }
+        })
+      }
+    })
+    return permissions
   }
 }
