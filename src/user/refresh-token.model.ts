@@ -1,4 +1,4 @@
-import { prop, Ref } from '@typegoose/typegoose'
+import { prop, Ref, getModelForClass } from '@typegoose/typegoose';
 import { User } from './user.model'
 
 export class RefreshToken {
@@ -11,7 +11,7 @@ export class RefreshToken {
   @prop()
   public expires!: Date
 
-  @prop()
+  @prop({ default: Date.now() })
   public created!: Date
 
   @prop()
@@ -34,3 +34,5 @@ export class RefreshToken {
     return !this.revoked && !this.isExpired
   }
 }
+
+export const RefreshTokenModel = getModelForClass(RefreshToken)
