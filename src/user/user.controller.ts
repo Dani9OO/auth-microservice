@@ -1,4 +1,4 @@
-import { hash } from 'argon2'
+import { hash, verify } from 'argon2'
 import { CreateUserInput } from './user.inputs'
 import { ServiceController } from '../service/service.controller'
 import { NotFoundError } from '../common/errors/not-found.error'
@@ -7,6 +7,8 @@ import { readFile } from 'fs/promises'
 import { sign } from 'jsonwebtoken'
 import { randomBytes } from 'crypto'
 import { UserModel, RefreshTokenModel } from '../common/models'
+import { ResponseError } from '../common/errors/response.error'
+import { isDocument } from '@typegoose/typegoose'
 export class UserController {
   public static createUser = async (user: CreateUserInput, service: string) => {
     await ServiceController.validateDefaultRolesExist(service)
@@ -16,9 +18,12 @@ export class UserController {
     return { user: u, service: s }
   }
 
-  public static validateLogin = async (email: string, service: string) => {
+  public static validateLogin = async (email: string, pass: string, service: string, ip: string) => {
     const user = await UserModel.findOne({ email })
     if (!user) throw new NotFoundError('User', { name: 'email', value: email })
+    if (!await verify(pass, user.password)) {
+      throw new ResponseError(`Unsuccessfull login attempt from ${ip} to user ${email}`, 'Incorrect password')
+    }
     const permissions = await ServiceController.validateUserService(user.id, service)
     return { user: { id: user.id, ...user.identity }, permissions }
   }
@@ -39,5 +44,17 @@ export class UserController {
       createdByIp: ip
     })
     return { refreshToken: rt.token, expires }
+  }
+
+  public static refreshToken = async (token: string, service: string, ip: string) => {
+    const rt = await RefreshTokenModel.findOne({ token }).populate('user')
+    if (!rt || !rt.isActive || !isDocument(rt.user)) throw new ResponseError('Invalid refresh token')
+    const { refreshToken, expires } = await this.generateRefreshToken(rt.user.id, ip)
+    rt.revoked = new Date()
+    rt.revokedByIp = ip
+    rt.replacedByToken = refreshToken
+    await rt.save()
+    const permissions = await ServiceController.validateUserService(rt.user.id, service)
+    return { user: { id: rt.user.id, ...rt.user.identity }, permissions, refreshToken, expires }
   }
 }
