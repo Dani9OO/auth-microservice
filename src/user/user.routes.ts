@@ -5,7 +5,7 @@ import { plainToClass } from 'class-transformer'
 import { validate } from 'class-validator'
 import { handleValidationError } from '../common/utils/handle-validation-error.util'
 import { handleServerError } from '../common/utils/handle-server-error.util'
-import { UserController } from './user.controller';
+import { UserController } from './user.controller'
 import { auth } from '../common/middleware/auth-service.middleware'
 export class UserRouting extends Routing {
   public readonly resource = 'User'
@@ -20,6 +20,7 @@ export class UserRouting extends Routing {
   private initRoutes () {
     this.router.post('/auth/register', auth, this.registerUser)
     this.router.post('/auth', auth, this.authenticateUser)
+    this.router.post('/auth/refresh-token', auth, this.refreshToken)
   }
 
   private registerUser = async (request: Request, response: Response) => {
@@ -38,11 +39,27 @@ export class UserRouting extends Routing {
       const data = plainToClass(AuthenticateUserInput, request.body)
       const errors = await validate(data, { validationError: { target: false }, forbidUnknownValues: true })
       if (errors.length > 0) return response.status(400).json(handleValidationError(errors))
-      const { user, permissions } = await UserController.validateLogin(data.email, request.service._id)
+      const { user, permissions } = await UserController.validateLogin(data.email, data.password, request.service._id, request.ip)
       const token = await UserController.signToken({ ...user, permissions }, request.service._id)
       const { refreshToken, expires } = await UserController.generateRefreshToken(user.id, request.ip)
       response.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true, expires, sameSite: 'none' })
       const message = `Successfully authenticated user with _id "${user.id}" to service ${request.service._id}`
+      console.log(message)
+      return response.header('Authorization', `Bearer ${token}`).status(200).json({ success: true, result: user, message })
+    } catch (error) { return response.status(500).json(handleServerError(error)) }
+  }
+
+  private refreshToken = async (request: Request, response: Response) => {
+    try {
+      const {
+        user,
+        permissions,
+        refreshToken,
+        expires
+      } = await UserController.refreshToken(request.cookies.refreshToken, request.service._id, request.ip)
+      response.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true, expires, sameSite: 'none' })
+      const token = await UserController.signToken({ ...user, permissions }, request.service._id)
+      const message = `Successfully refreshed token for user with _id "${user.id}" to service ${request.service._id}`
       console.log(message)
       return response.header('Authorization', `Bearer ${token}`).status(200).json({ success: true, result: user, message })
     } catch (error) { return response.status(500).json(handleServerError(error)) }
