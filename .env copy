@@ -1,1 +1,6 @@
-NODE_ENV = 
+NODE_ENV="" 
+DB_URI=""
+SMTP_HOST=""
+SMTP_PORT=""
+SMTP_USER=""
+SMTP_PASS=""
