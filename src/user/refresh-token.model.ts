@@ -21,7 +21,7 @@ export class RefreshToken {
   public revoked?: Date
 
   @prop()
-  public revokedByIp?: Date
+  public revokedByIp?: string
 
   @prop()
   public replacedByToken?: string
