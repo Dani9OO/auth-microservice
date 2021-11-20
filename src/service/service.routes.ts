@@ -7,6 +7,7 @@ import { ServiceController } from './service.controller'
 import { CreateServiceInput } from './service.inputs'
 import { handleValidationError } from '../common/utils/handle-validation-error.util'
 import { authAdmin } from '../common/middleware/auth-admin.middleware'
+import MongoIdInput from '../common/validators/mongo-id.input'
 
 export class ServiceRouting extends Routing {
   public readonly resource = 'Service'
@@ -21,6 +22,7 @@ export class ServiceRouting extends Routing {
   private initRoutes () {
     this.router.get(`${this.path}/`, authAdmin, this.queryServices)
     this.router.post(`${this.path}/`, authAdmin, this.createService)
+    this.router.post(`${this.path}/auth/:_id`, authAdmin, this.authToService)
   }
 
   private queryServices = async (request: Request, response: Response) => {
@@ -45,6 +47,17 @@ export class ServiceRouting extends Routing {
       const service = await ServiceController.createService(data)
       const message = `Sucessfully created service with _id "${service._id}"`
       return response.status(200).json({ success: true, result: { ...service }, message })
+    } catch (error) { return response.status(500).json(handleServerError(error)) }
+  }
+
+  private authToService = async (request: Request, response: Response) => {
+    try {
+      const data = plainToClass(MongoIdInput, request.params)
+      const errors = await validate(data, { validationError: { target: false }, forbidUnknownValues: true })
+      if (errors.length > 0) return response.status(400).json(handleValidationError(errors))
+      const message = `Authenticated ${request.ip} to service with _id ${data._id}`
+      console.log(message)
+      return response.status(200).json({ success: true, result: await ServiceController.authToService(data._id!), message })
     } catch (error) { return response.status(500).json(handleServerError(error)) }
   }
 }
