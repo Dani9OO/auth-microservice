@@ -24,8 +24,8 @@ export class User {
   @prop()
   public password!: string
 
-  @prop({ ref: () => ResetToken })
-  public resetToken?: Ref<ResetToken>
+  @prop({ type: () => ResetToken, _id: false })
+  public resetToken?: ResetToken
 
   @prop({ default: Date.now() })
   public created!: Date
@@ -38,7 +38,8 @@ export class User {
 
   public get identity () {
     return {
-      name: `${this.forename} ${this.surname}`,
+      forename: this.forename,
+      surname: this.surname,
       email: this.email,
       username: this.username
     }

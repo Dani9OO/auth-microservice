@@ -6,8 +6,4 @@ export class VerificationToken {
 
   @prop()
   public verified?: Date
-
-  public get isVerified () {
-    return !!this.verified
-  }
 }

@@ -10,6 +10,6 @@ export class ServiceUser {
   @prop({ ref: () => Role, required: true })
   public roles!: Ref<Role>[]
 
-  @prop({ ref: () => VerificationToken })
-  public verificationToken?: Ref<VerificationToken>
+  @prop({ type: () => VerificationToken, _id: false })
+  public verificationToken?: VerificationToken
 }

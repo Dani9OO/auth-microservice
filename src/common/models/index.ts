@@ -7,8 +7,6 @@ import { User } from '../../user/user.model'
 import { Policy } from '../../policy/policy.model'
 import { ServiceUser } from '../../service/service-user.model'
 import { RefreshToken } from '../../user/refresh-token.model'
-import { ResetToken } from '../../user/reset-token.model'
-import { VerificationToken } from '../../service/verification-token.model'
 
 export const ModuleModel = getModelForClass(Module)
 
@@ -25,7 +23,3 @@ export const ServiceUserModel = getModelForClass(ServiceUser)
 export const UserModel = getModelForClass(User)
 
 export const RefreshTokenModel = getModelForClass(RefreshToken)
-
-export const ResetTokenModel = getModelForClass(ResetToken)
-
-export const VerificationTokenModel = getModelForClass(VerificationToken)
