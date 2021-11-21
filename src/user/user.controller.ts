@@ -1,5 +1,5 @@
 import { hash, verify } from 'argon2'
-import { CreateUserInput } from './user.inputs'
+import { CreateUserInput, ForgotPasswordInput, ResetPasswordInput } from './user.inputs'
 import { ServiceController } from '../service/service.controller'
 import { NotFoundError } from '../common/errors/not-found.error'
 import { resolve, join } from 'path'
@@ -78,5 +78,26 @@ export class UserController {
     rt.revoked = new Date()
     rt.revokedByIp = ip
     await rt.save()
+  }
+
+  public static verifyEmail = async (service: string, token: string) => {
+    return await ServiceController.verifyEmail(service, token)
+  }
+
+  public static forgotPassword = async (user: ForgotPasswordInput) => {
+    const u = await UserModel.findOne({ email: user.email })
+    if (!u) return undefined
+    u.resetToken = { token: randomBytes(40).toString('hex'), expires: new Date(Date.now() + 60 * 60 * 1000) }
+    await u.save()
+    return { ...u.identity, token: u.resetToken.token }
+  }
+
+  public static resetPassword = async (user: ResetPasswordInput) => {
+    const u = await UserModel.findOne({ 'resetToken.token': user.token, 'resetToken.expires': { $gt: Date.now() } })
+    if (!u) throw new ResponseError('Invalid token, please try resetting your password again')
+    u.password = await hash(user.password)
+    delete u.resetToken
+    await u.save()
+    return u.email
   }
 }

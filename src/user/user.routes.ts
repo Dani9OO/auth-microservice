@@ -1,6 +1,6 @@
 import { Routing } from '../common/classes/routing.class'
 import { Request, Response, Router } from 'express'
-import { CreateUserInput, AuthenticateUserInput } from './user.inputs'
+import { CreateUserInput, AuthenticateUserInput, ForgotPasswordInput, ResetPasswordInput } from './user.inputs'
 import { plainToClass } from 'class-transformer'
 import { validate } from 'class-validator'
 import { handleValidationError } from '../common/utils/handle-validation-error.util'
@@ -27,6 +27,9 @@ export class UserRouting extends Routing {
     this.router.post('/:_id/auth', this.authenticateUser)
     this.router.post('/:_id/auth/refresh-token', this.refreshToken)
     this.router.post('/:_id/auth/logout', authUser, this.logout)
+    this.router.post('/:_id/auth/verify', this.verifyEmail)
+    this.router.post('/:_id/auth/forgot-password', this.forgotPassword)
+    this.router.post('/:_id/auth/reset-password', this.resetPassword)
   }
 
   private registerUser = async (request: Request, response: Response) => {
@@ -89,6 +92,48 @@ export class UserRouting extends Routing {
       const message = `Successfully logged out user with _id "${request.user._id}"`
       console.log(message)
       return response.status(200).json({ success: true, message })
+    } catch (error) { return response.status(500).json(handleServerError(error)) }
+  }
+
+  private verifyEmail = async (request: Request, response: Response) => {
+    try {
+      if (!request.query.token) return response.status(400).json(new ResponseError('Verification token is not defined').respond())
+      const email = await UserController.verifyEmail(request.params._id, request.query.token.toString())
+      const message = `Successfully verified ${email}'s email for service with _id "${request.params._id}"`
+      console.log(message)
+      return response.status(200).json({ success: true, result: email, message })
+    } catch (error) { return response.status(500).json(handleServerError(error)) }
+  }
+
+  private forgotPassword = async (request: Request, response: Response) => {
+    try {
+      const data = plainToClass(ForgotPasswordInput, request.body)
+      const errors = await validate(data, { validationError: { target: false }, forbidUnknownValues: true })
+      if (errors.length > 0) return response.status(400).json(handleValidationError(errors))
+      const u = await UserController.forgotPassword(data)
+      response.status(200).json({ success: true, message: 'Password reset link requested' })
+      if (u) {
+        const url = `${process.env.FRONTEND_URL}/auth/reset/${request.params._id}?token=${u.token}`
+        const html = await renderFile(join(resolve(process.cwd()), 'views', 'reset-password.ejs'), { forename: u.forename, url })
+        await this.mailer.transporter.sendMail({
+          from: this.mailer.sender,
+          to: u.email,
+          subject: 'Password reset information',
+          html
+        })
+      }
+    } catch (error) { return response.status(500).json(handleServerError(error)) }
+  }
+
+  private resetPassword = async (request: Request, response: Response) => {
+    try {
+      const data = plainToClass(ResetPasswordInput, request.body)
+      const errors = await validate(data, { validationError: { target: false }, forbidUnknownValues: true })
+      if (errors.length > 0) return response.status(400).json(handleValidationError(errors))
+      const email = await UserController.resetPassword(data)
+      const message = `Successfully reset password for ${email}`
+      console.log(message)
+      return response.status(200).json({ success: true, result: email, message })
     } catch (error) { return response.status(500).json(handleServerError(error)) }
   }
 }

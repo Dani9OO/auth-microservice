@@ -69,11 +69,12 @@ export class ServiceController {
   public static addUserToService = async (user: string, service: string) => {
     const s = await ServiceModel.findById(service)
     if (!s) throw new NotFoundError('Service', { name: '_id', value: service })
-    const u = new ServiceUserModel({ user, roles: s.defaultRoles })
-    const token = randomBytes(40).toString('hex')
-    u.verificationToken = { token }
+    const u = new ServiceUserModel({ user, roles: s.defaultRoles, service })
+    if (!s.users) s.users = [u.id]; else s.users.push(u.id)
+    await s.save()
+    u.verificationToken = { token: randomBytes(40).toString('hex') }
     await u.save()
-    return { user: u, service: s, token }
+    return { user: u, service: s, token: u.verificationToken.token }
   }
 
   public static removeUserFromService = async (user: string, service: string) => {
@@ -122,5 +123,15 @@ export class ServiceController {
       }
     })
     return permissions
+  }
+
+  public static verifyEmail = async (service: string, token: string) => {
+    const serviceUser = await ServiceUserModel.findOne({ service, 'verificationToken.token': token }).populate('user')
+    if (!serviceUser) throw new NotFoundError('Service user', { name: 'token', value: token })
+    serviceUser.verificationToken!.verified = new Date()
+    delete serviceUser.verificationToken!.token
+    await serviceUser.save()
+    if (!isDocument(serviceUser.user)) throw new ResponseError('Couldn\'t populate user')
+    return serviceUser.user.email
   }
 }

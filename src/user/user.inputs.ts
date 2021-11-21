@@ -26,7 +26,20 @@ export class AuthenticateUserInput {
   @IsEmail()
   public email!: string
 
+  @Matches(securePassword)
+  public password!: string
+}
+
+export class ForgotPasswordInput {
+  @IsEmail()
+  public email!: string
+}
+
+export class ResetPasswordInput {
   @IsString()
   @IsNotEmpty()
+  public token!: string
+
+  @Matches(securePassword)
   public password!: string
 }
