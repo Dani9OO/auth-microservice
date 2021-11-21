@@ -8,7 +8,7 @@ import { Policy } from '../../policy/policy.model'
 import { ServiceUser } from '../../service/service-user.model'
 import { RefreshToken } from '../../user/refresh-token.model'
 import { ResetToken } from '../../user/reset-token.model'
-import { VerificationToken } from '../../user/verification-token.model'
+import { VerificationToken } from '../../service/verification-token.model'
 
 export const ModuleModel = getModelForClass(Module)
 

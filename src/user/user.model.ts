@@ -1,6 +1,5 @@
 import { prop, Ref, modelOptions } from '@typegoose/typegoose'
 import { ResetToken } from './reset-token.model'
-import { VerificationToken } from './verification-token.model'
 import { Service } from '../service/service.model'
 
 @modelOptions({
@@ -24,9 +23,6 @@ export class User {
 
   @prop()
   public password!: string
-
-  @prop({ ref: () => VerificationToken })
-  public verificationToken?: Ref<VerificationToken>
 
   @prop({ ref: () => ResetToken })
   public resetToken?: Ref<ResetToken>
