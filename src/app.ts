@@ -22,7 +22,7 @@ export class App {
     this.app.set('trust proxy', 1)
     this.app.use(json())
     this.app.use(urlencoded({ extended: true }))
-    this.app.use(cors({ exposedHeaders: ['X-API-KEY'] }))
+    this.app.use(cors({ exposedHeaders: ['X-API-KEY'], credentials: true }))
     this.app.use(cookieParser())
   }
 
