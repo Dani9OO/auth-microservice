@@ -12,10 +12,24 @@ import { isDocument } from '@typegoose/typegoose'
 export class UserController {
   public static createUser = async (user: CreateUserInput, service: string) => {
     await ServiceController.validateDefaultRolesExist(service)
-    user.password = await hash(user.password)
-    const u = await UserModel.create({ ...user, registeredBy: service })
-    const s = await ServiceController.addUserToService(u.id, service)
-    return { user: u, service: s }
+    const u = await UserModel.findOne({ email: user.email })
+    if (!u) {
+      user.password = await hash(user.password)
+      const newUser = await UserModel.create({ ...user, services: [service] })
+      const { user: serviceUser, service: s, token } = await ServiceController.addUserToService(newUser.id, service)
+      return { user: newUser.identity, service: { id: s.id, name: s.name, user: serviceUser.id, token } }
+    } else {
+      const { user: serviceUser, service: s, token } = await ServiceController.addUserToService(u.id, service)
+      return { user: u.identity, service: { id: s.id, name: s.name, user: serviceUser.id, token } }
+    }
+  }
+
+  public static findUserById = async (_id: string) => {
+    return await UserModel.findById(_id)
+  }
+
+  public static findRefreshToken = async (user: string, token: string) => {
+    return await RefreshTokenModel.findOne({ user, token })
   }
 
   public static validateLogin = async (email: string, pass: string, service: string, ip: string) => {
@@ -56,5 +70,13 @@ export class UserController {
     await rt.save()
     const permissions = await ServiceController.validateUserService(rt.user.id, service)
     return { user: { id: rt.user.id, ...rt.user.identity }, permissions, refreshToken, expires }
+  }
+
+  public static logout = async (token: string, ip: string) => {
+    const rt = await RefreshTokenModel.findOne({ token })
+    if (!rt || !rt.isActive) throw new ResponseError('Invalid refresh token')
+    rt.revoked = new Date()
+    rt.revokedByIp = ip
+    await rt.save()
   }
 }

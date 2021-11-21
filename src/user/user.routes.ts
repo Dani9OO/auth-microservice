@@ -9,12 +9,15 @@ import { UserController } from './user.controller'
 import { authUser } from '../common/middleware/auth-user.middleware'
 import { ResponseError } from '../common/errors/response.error'
 import { ForbiddenError } from '../common/errors/forbidden.error'
+import { renderFile } from 'ejs'
+import { join, resolve } from 'path'
+import { Mailer } from '../common/mailer'
 export class UserRouting extends Routing {
   public readonly resource = 'User'
 
   public readonly router = Router()
 
-  constructor () {
+  constructor (private mailer: Mailer) {
     super()
     this.initRoutes()
   }
@@ -31,9 +34,17 @@ export class UserRouting extends Routing {
       const data = plainToClass(CreateUserInput, request.body)
       const errors = await validate(data, { validationError: { target: false }, forbidUnknownValues: true })
       if (errors.length > 0) return response.status(400).json(handleValidationError(errors))
-      const { user } = await UserController.createUser(data, request.params._id)
-      const message = `Successfully registered user with _id "${user._id}"`
-      return response.status(200).json({ success: true, result: user, message })
+      const { user, service } = await UserController.createUser(data, request.params._id)
+      const message = `Successfully registered user with email "${user.email}" to service "${service.name}"`
+      response.status(200).json({ success: true, result: user, message: `${message}, you'll soon receive a confirmation email to your inbox.` })
+      const url = `${process.env.FRONTEND_URL}/auth/verify/${service.id}?token=${service.token}`
+      const html = await renderFile(join(resolve(process.cwd()), 'views', 'verify-mail.ejs'), { forename: user.forename, service: service.name, url })
+      await this.mailer.transporter.sendMail({
+        from: this.mailer.sender,
+        to: user.email,
+        subject: `Email verification for ${service.name}`,
+        html
+      })
     } catch (error) { return response.status(500).json(handleServerError(error)) }
   }
 

@@ -25,7 +25,7 @@ import { UserRouting } from './user/user.routes'
   const policy = new PolicyRouting()
   const role = new RoleRouting()
   const service = new ServiceRouting()
-  const user = new UserRouting()
+  const user = new UserRouting(mailer)
 
   const app = new App([
     mod,
