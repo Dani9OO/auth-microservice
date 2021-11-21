@@ -57,6 +57,10 @@ export class ServiceController {
     return prefix
   }
 
+  public static findServiceById = async (_id: string) => {
+    return await ServiceModel.findById(_id)
+  }
+
   public static findServiceByPrefix = async (prefix: string) => {
     return await ServiceModel.findOne({ 'apiKey.prefix': prefix })
   }
