@@ -4,5 +4,9 @@ declare namespace Express {
       _id: string,
       name: string
     }
+    user: {
+      _id: string,
+      ownsToken: (user: string, token: string) => Promise<boolean>
+    }
   }
 }
