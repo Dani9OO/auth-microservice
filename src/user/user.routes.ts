@@ -40,7 +40,7 @@ export class UserRouting extends Routing {
       const { user, service } = await UserController.createUser(data, request.params._id)
       const message = `Successfully registered user with email "${user.email}" to service "${service.name}"`
       response.status(200).json({ success: true, result: user, message: `${message}, you'll soon receive a confirmation email to your inbox.` })
-      const url = `${process.env.FRONTEND_URL}/auth/verify/${service.id}?token=${service.token}`
+      const url = `${process.env.FRONTEND_URL}/verify/${service.id}?token=${service.token}`
       const html = await renderFile(join(resolve(process.cwd()), 'views', 'verify-mail.ejs'), { forename: user.forename, service: service.name, url })
       await this.mailer.transporter.sendMail({
         from: this.mailer.sender,
@@ -113,7 +113,7 @@ export class UserRouting extends Routing {
       const u = await UserController.forgotPassword(data)
       response.status(200).json({ success: true, message: 'Password reset link requested' })
       if (u) {
-        const url = `${process.env.FRONTEND_URL}/auth/reset/${request.params._id}?token=${u.token}`
+        const url = `${process.env.FRONTEND_URL}/reset/${request.params._id}?token=${u.token}`
         const html = await renderFile(join(resolve(process.cwd()), 'views', 'reset-password.ejs'), { forename: u.forename, url })
         await this.mailer.transporter.sendMail({
           from: this.mailer.sender,
