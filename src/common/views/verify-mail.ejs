@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="components.css">
+  <title>Email verification</title>
+  <style>
+    body {
+      background-color: rgba(55, 55, 55, 1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <img class="image" src="https://assets.daniromo.me/logo.svg" alt="logo">
+      <div class="content">
+        <h3 class="title">auth</h3>
+        <p class="description">Microservice</p>
+      </div>
+    </div>
+    <div class="body">
+      <p>Welcome <%= forename %> :)</p>
+      <p>
+        Confirming your identity is the last step for you to start using your account on <%= service %>.
+      </p>
+      <p>
+        Please be sure to leave me an email at
+        <a href="mailto:support@daniromo.me">support@daniromo.me</a> if you happen to have 
+        any issues or questions, have a good one!
+      </p>
+    </div>
+    <div class="footer">
+      <a href="<%= url %>" target="__blank"><button class="button">confirm email</button></a>
+    </div>
+  </div>
+</body>
+</html>
