@@ -9,6 +9,7 @@ import { ResponseError } from '../common/errors/response.error'
 import { isDocumentArray, DocumentType, isDocument } from '@typegoose/typegoose'
 import { Policy } from '../policy/policy.model'
 import { ServiceModel, ServiceUserModel } from '../common/models'
+import { randomBytes } from 'crypto'
 
 export class ServiceController {
   public static queryServices = async () => {
@@ -68,7 +69,11 @@ export class ServiceController {
   public static addUserToService = async (user: string, service: string) => {
     const s = await ServiceModel.findById(service)
     if (!s) throw new NotFoundError('Service', { name: '_id', value: service })
-    return await ServiceUserModel.create({ user, roles: s.defaultRoles })
+    const u = new ServiceUserModel({ user, roles: s.defaultRoles })
+    const token = randomBytes(40).toString('hex')
+    u.verificationToken = { token }
+    await u.save()
+    return { user: u, service: s, token }
   }
 
   public static removeUserFromService = async (user: string, service: string) => {
