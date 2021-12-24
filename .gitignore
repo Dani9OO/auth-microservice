@@ -118,3 +118,6 @@ dist
 .pnp.*
 
 keys/
+*.rest
+.vscode/
+dist.*
