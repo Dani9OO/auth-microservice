@@ -17,7 +17,7 @@ export class ServiceController {
   }
 
   public static createService = async (service: CreateServiceInput) => {
-    const [prefix, key] = [this.getUniquePrefix(), randomatic('Aa00!!', 32)]
+    const [prefix, key] = [await this.getUniquePrefix(), randomatic('Aa00!!', 32)]
     const apiKey = `${prefix}.${key}`
     const hashedKey = await hash(key)
     const s = await ServiceModel.create({ ...service, apiKey: { prefix, key: hashedKey } })
@@ -48,7 +48,7 @@ export class ServiceController {
   }
 
   public static authToService = async (service: string) => {
-    return await readFile(join(resolve(process.cwd()), 'keys', service, 'apikey'))
+    return (await readFile(join(resolve(process.cwd()), 'keys', service, 'apikey'))).toString()
   }
 
   private static getUniquePrefix = async () => {
