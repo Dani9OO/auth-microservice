@@ -8,6 +8,7 @@ import { CreateServiceInput } from './service.inputs'
 import { handleValidationError } from '../common/utils/handle-validation-error.util'
 import { authAdmin } from '../common/middleware/auth-admin.middleware'
 import MongoIdInput from '../common/validators/mongo-id.input'
+import { auth } from '../common/middleware/auth-service.middleware'
 
 export class ServiceRouting extends Routing {
   public readonly resource = 'Service'
@@ -20,22 +21,24 @@ export class ServiceRouting extends Routing {
   }
 
   private initRoutes () {
-    this.router.get(`${this.path}/`, authAdmin, this.queryServices)
+    this.router.post(`${this.path}/auth`, auth, this.serviceLogin)
+    this.router.get(`${this.path}s/`, authAdmin, this.queryServices)
     this.router.post(`${this.path}/`, authAdmin, this.createService)
     this.router.post(`${this.path}/auth/:_id`, authAdmin, this.authToService)
+  }
+
+  private serviceLogin = (request: Request, response: Response) => {
+    const message = `Authenticated ${request.ip} to service with _id ${request.service._id}`
+    console.log(message)
+    return response.status(200).json({ success: true, result: request.service, message })
   }
 
   private queryServices = async (request: Request, response: Response) => {
     try {
       const services = await ServiceController.queryServices()
-      if (!(services.length > 0)) {
-        const error = new Error('There are no registered services on the database')
-        console.error(error)
-        return response.status(404).json({ success: false, message: error.message })
-      }
       const message = `Successfully queried ${services.length} services`
       console.log(message)
-      return response.status(200).json({ success: true, result: services, message })
+      return response.status(200).json(services)
     } catch (error) { return response.status(500).json(handleServerError(error)) }
   }
 
