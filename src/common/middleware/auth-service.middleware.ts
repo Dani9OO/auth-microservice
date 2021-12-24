@@ -7,7 +7,7 @@ import { verify } from 'argon2'
 export const auth = async (request: Request, response: Response, next: NextFunction) => {
   const authHeader = request.header('X-API-KEY')
   if (!authHeader) return response.status(401).json(new UnauthenticatedError(request.ip, request.hostname, request.originalUrl).respond())
-  const [prefix, key] = [authHeader.slice(0, 6), authHeader.slice(7)]
+  const [prefix, key] = [authHeader.slice(0, 7), authHeader.slice(8)]
   const service = await ServiceController.findServiceByPrefix(prefix)
   if (!service) return response.status(403).json(new ForbiddenError(request.ip, request.originalUrl).respond())
   if (!(await verify(service.apiKey.key, key))) return response.status(403).json(new ForbiddenError(request.ip, request.originalUrl).respond())
