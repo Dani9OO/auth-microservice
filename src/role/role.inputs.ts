@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsMongoId, IsOptional } from 'class-validator'
+import { IsString, IsNotEmpty, IsMongoId, IsOptional, IsBoolean } from 'class-validator'
 import MongoIdInput from '../common/validators/mongo-id.input'
 export class CreateRoleInput {
   @IsString()
@@ -7,6 +7,10 @@ export class CreateRoleInput {
 
   @IsMongoId({ each: true })
   public policies!: string[]
+
+  @IsOptional()
+  @IsBoolean()
+  public default!: boolean
 }
 
 export class UpdateRoleInput extends MongoIdInput {
@@ -18,4 +22,8 @@ export class UpdateRoleInput extends MongoIdInput {
   @IsOptional()
   @IsMongoId({ each: true })
   public policies?: string[]
+
+  @IsOptional()
+  @IsBoolean()
+  public default!: boolean
 }

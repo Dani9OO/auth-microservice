@@ -4,11 +4,11 @@ import { PermissionController } from '../permissions/permission.controller'
 import { ModuleModel } from '../common/models'
 export class ModuleController {
   public static getModules = async (service: string) => {
-    return await ModuleModel.find({ service }).sort({ name: 'asc' }).populate('permissions').lean()
+    return await ModuleModel.find({ service }).sort({ name: 'asc' }).populate('permissions')
   }
 
   public static findModule = async (m: string, service: string) => {
-    const moduleDoc = await ModuleModel.findOne({ _id: m, service }).lean()
+    const moduleDoc = await ModuleModel.findOne({ _id: m, service })
     if (!moduleDoc) throw new NotFoundError('Module', { name: '_id', value: m })
     return moduleDoc
   }

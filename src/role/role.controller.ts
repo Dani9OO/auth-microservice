@@ -2,9 +2,10 @@ import { CreateRoleInput, UpdateRoleInput } from './role.inputs'
 import { Types } from 'mongoose'
 import { NotFoundError } from '../common/errors/not-found.error'
 import { RoleModel } from '../common/models'
+import { ServiceController } from '../service/service.controller'
 export class RoleController {
   public static getRoles = async (service: string) => {
-    return await RoleModel.find({ service }).sort({ name: 'asc' }).lean()
+    return await RoleModel.find({ service }).sort({ name: 'asc' })
   }
 
   public static getRole = async (_id: string, service: string) => {
@@ -16,7 +17,7 @@ export class RoleController {
           path: 'module'
         }
       }
-    }).lean()
+    })
   }
 
   public static createRole = async (role: CreateRoleInput, service: string) => {
@@ -28,6 +29,11 @@ export class RoleController {
     if (!r) throw new NotFoundError('Role', { name: '_id', value: role._id! })
     if (role.policies) r.policies = role.policies.map(r => new Types.ObjectId(r))
     if (role.name && r.name !== role.name) r.name = role.name
+    if (r.default !== role.default) {
+      r.default = role.default
+      if (role.default) await ServiceController.addDefaultRole(service, r.id)
+      else await ServiceController.removeDefaultRole(service, r.id)
+    }
     await r.save()
     return r
   }

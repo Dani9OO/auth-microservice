@@ -11,4 +11,7 @@ export class Role {
 
   @prop({ ref: () => Policy, default: [] })
   public policies?: Ref<Policy>[]
+
+  @prop({ default: false })
+  public default!: boolean
 }

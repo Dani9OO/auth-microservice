@@ -21,7 +21,7 @@ export class RoleRouting extends Routing {
 
   private initRoutes () {
     this.router.post(`${this.path}/`, auth, this.create)
-    this.router.get(`${this.path}/`, auth, this.read)
+    this.router.get(`${this.path}s/`, auth, this.read)
     this.router.get(`${this.path}/:_id`, auth, this.details)
     this.router.put(`${this.path}/:_id`, auth, this.update)
     this.router.delete(`${this.path}/:_id`, auth, this.delete)
@@ -42,7 +42,7 @@ export class RoleRouting extends Routing {
   private read = async (request: Request, response: Response) => {
     try {
       const roles = await RoleController.getRoles(request.service._id)
-      const message = `Successfully queried ${roles.length} Policies`
+      const message = `Successfully queried ${roles.length} Roles`
       console.log(message)
       return response.status(200).json({ success: true, result: roles, message })
     } catch (error) { return response.status(500).json(handleServerError(error)) }

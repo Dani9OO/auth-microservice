@@ -85,7 +85,7 @@ export class ServiceController {
   }
 
   public static validateDefaultRolesExist = async (_id: string) => {
-    const service = await ServiceModel.findById(_id).lean()
+    const service = await ServiceModel.findById(_id)
     if (!service) throw new NotFoundError('Service', { name: '_id', value: _id })
     if (!service.defaultRoles || !(service.defaultRoles.length > 0)) throw new ResponseError('Default service roles must be defined before registering an user')
   }
@@ -133,5 +133,15 @@ export class ServiceController {
     await serviceUser.save()
     if (!isDocument(serviceUser.user)) throw new ResponseError('Couldn\'t populate user')
     return serviceUser.user.email
+  }
+
+  public static addDefaultRole = async (service: string, role: string) => {
+    const s = await ServiceModel.findByIdAndUpdate(service, { $addToSet: { defaultRoles: role } })
+    if (!s) throw new NotFoundError('Service', { name: '_id', value: service })
+  }
+
+  public static removeDefaultRole = async (service: string, role: string) => {
+    const s = await ServiceModel.findByIdAndUpdate(service, { $pull: { defaultRoles: role } })
+    if (!s) throw new NotFoundError('Service', { name: '_id', value: service })
   }
 }

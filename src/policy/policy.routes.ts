@@ -20,7 +20,7 @@ export class PolicyRouting extends Routing {
 
   private initRoutes () {
     this.router.post(`${this.path}/`, auth, this.create)
-    this.router.get(`${this.path}/`, auth, this.read)
+    this.router.get('/policies/', auth, this.read)
     this.router.put(`${this.path}/:_id`, auth, this.update)
     this.router.delete(`${this.path}/:_id`, auth, this.delete)
   }
