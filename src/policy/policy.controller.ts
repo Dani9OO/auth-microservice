@@ -4,7 +4,7 @@ import { NotFoundError } from '../common/errors/not-found.error'
 import { PolicyModel } from '../common/models'
 export class PolicyController {
   public static getPolicies = async (service: string) => {
-    return await PolicyModel.find({ service }).sort({ name: 'asc' }).populate({ path: 'permissions', populate: { path: 'module' } })
+    return await PolicyModel.find({ service }).sort({ name: 'asc' })
   }
 
   public static createPolicy = async (policy: CreatePolicyInput, service: string) => {

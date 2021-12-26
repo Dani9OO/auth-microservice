@@ -4,7 +4,7 @@ import { PermissionController } from '../permissions/permission.controller'
 import { ModuleModel } from '../common/models'
 export class ModuleController {
   public static getModules = async (service: string) => {
-    return await ModuleModel.find({ service }).sort({ name: 'asc' }).populate('permissions')
+    return await ModuleModel.find({ service }).sort({ name: 'asc' })
   }
 
   public static findModule = async (m: string, service: string) => {
@@ -16,7 +16,7 @@ export class ModuleController {
   public static createModule = async (service: string, m: CreateModuleInput) => {
     const moduleDoc = await ModuleModel.create({ service, name: m.name })
     const permissions = await Promise.all(m.permissions.map(p => PermissionController.createPermission({ module: moduleDoc.id, name: p }, service, true)))
-    moduleDoc.permissions = permissions.map(p => p.id)
+    moduleDoc.permissions = permissions.map(p => p._id)
     await moduleDoc.save()
     return moduleDoc
   }
