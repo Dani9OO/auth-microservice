@@ -21,10 +21,20 @@ export class ServiceRouting extends Routing {
   }
 
   private initRoutes () {
+    this.router.get(`${this.path}/users/`, auth, this.getUsers)
     this.router.post(`${this.path}/auth`, auth, this.serviceLogin)
     this.router.get(`${this.path}s/`, authAdmin, this.queryServices)
     this.router.post(`${this.path}/`, authAdmin, this.createService)
     this.router.post(`${this.path}/auth/:_id`, authAdmin, this.authToService)
+  }
+
+  private getUsers = async (request: Request, response: Response) => {
+    try {
+      const users = await ServiceController.getUsers(request.service._id)
+      const message = `Succcessfully queried ${users.length} Users`
+      console.log(message)
+      return response.status(200).json({ success: true, result: users, message })
+    } catch (error) { return response.status(500).json(handleServerError(error)) }
   }
 
   private serviceLogin = (request: Request, response: Response) => {

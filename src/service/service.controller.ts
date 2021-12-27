@@ -144,4 +144,10 @@ export class ServiceController {
     const s = await ServiceModel.findByIdAndUpdate(service, { $pull: { defaultRoles: role } })
     if (!s) throw new NotFoundError('Service', { name: '_id', value: service })
   }
+
+  public static getUsers = async (service: string) => {
+    const users = await ServiceUserModel.find({ service }).populate('user')
+    if (!users) throw new NotFoundError('Service user', { name: '_id', value: service })
+    return users
+  }
 }
