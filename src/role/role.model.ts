@@ -10,7 +10,7 @@ export class Role {
   public name!: string
 
   @prop({ ref: () => Policy, default: [] })
-  public policies?: Ref<Policy>[]
+  public policies!: Ref<Policy>[]
 
   @prop({ default: false })
   public default!: boolean
