@@ -23,6 +23,7 @@ export class PermissionController {
   public static deletePermission = async (_id: string, service: string) => {
     const m = await ModuleController.findModule(_id, service)
     await ModuleController.removePermissionFromModule(m._id, _id)
+    await PolicyController.removePermissions([_id])
     return await PermissionModel.findByIdAndDelete(_id)
   }
 
