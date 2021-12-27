@@ -1,6 +1,7 @@
 import { CreatePermissionInput, UpdatePermissionInput, GetPermissionsInput } from './permission.input'
 import { ModuleController } from '../module/module.controller'
 import { PermissionModel } from '../common/models'
+import { PolicyController } from '../policy/policy.controller'
 export class PermissionController {
   public static getPermissions = async (service: string, data: GetPermissionsInput) => {
     return data.module
@@ -11,7 +12,7 @@ export class PermissionController {
   public static createPermission = async (permission: CreatePermissionInput, service: string, skipValidation?: boolean) => {
     if (!skipValidation) await ModuleController.findModule(permission.module, service)
     const p = await PermissionModel.create({ ...permission, service })
-    if (!skipValidation) await ModuleController.addPermissionToModule(permission.module, p.id)
+    await ModuleController.addPermissionToModule(permission.module, p.id)
     return p.toObject()
   }
 
@@ -23,5 +24,11 @@ export class PermissionController {
     const m = await ModuleController.findModule(_id, service)
     await ModuleController.removePermissionFromModule(m._id, _id)
     return await PermissionModel.findByIdAndDelete(_id)
+  }
+
+  public static permissionCleanup = async (module: string, service: string) => {
+    const permissions = (await PermissionModel.find({ module, service })).map(p => p._id)
+    await PermissionModel.deleteMany({ _id: permissions })
+    await PolicyController.removePermissions(permissions)
   }
 }

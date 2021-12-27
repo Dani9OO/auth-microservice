@@ -23,4 +23,9 @@ export class PolicyController {
   public static deletePolicy = async (_id: string, service: string) => {
     return await PolicyModel.findOneAndDelete({ _id, service })
   }
+
+  public static removePermissions = async (permissionIds: string[]) => {
+    const permissions = permissionIds.map(p => new Types.ObjectId(p))
+    return await PolicyModel.updateMany({ permissions }, { $pull: { permissions: { $in: permissions } } })
+  }
 }

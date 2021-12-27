@@ -26,6 +26,7 @@ export class ModuleController {
   }
 
   public static deleteModule = async (service: string, _id: string) => {
+    await PermissionController.permissionCleanup(_id, service)
     return await ModuleModel.findOneAndDelete({ _id, service })
   }
 
