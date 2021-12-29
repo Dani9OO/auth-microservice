@@ -9,6 +9,7 @@ import { handleValidationError } from '../common/utils/handle-validation-error.u
 import { authAdmin } from '../common/middleware/auth-admin.middleware'
 import MongoIdInput from '../common/validators/mongo-id.input'
 import { auth } from '../common/middleware/auth-service.middleware'
+import { UpdateServiceUserInput } from './service-user.inputs'
 
 export class ServiceRouting extends Routing {
   public readonly resource = 'Service'
@@ -22,6 +23,7 @@ export class ServiceRouting extends Routing {
 
   private initRoutes () {
     this.router.get(`${this.path}/users/`, auth, this.getUsers)
+    this.router.put(`${this.path}/user/:_id`, auth, this.updateUser)
     this.router.post(`${this.path}/auth`, auth, this.serviceLogin)
     this.router.get(`${this.path}s/`, authAdmin, this.queryServices)
     this.router.post(`${this.path}/`, authAdmin, this.createService)
@@ -34,6 +36,18 @@ export class ServiceRouting extends Routing {
       const message = `Succcessfully queried ${users.length} Users`
       console.log(message)
       return response.status(200).json({ success: true, result: users, message })
+    } catch (error) { return response.status(500).json(handleServerError(error)) }
+  }
+
+  private updateUser = async (request: Request, response: Response) => {
+    try {
+      const data = plainToClass(UpdateServiceUserInput, { ...request.body, ...request.params })
+      const errors = await validate(data, { validationError: { target: false }, forbidUnknownValues: true })
+      if (errors.length > 0) return response.status(400).json(handleValidationError(errors))
+      const user = await ServiceController.updateUser(data, request.service._id)
+      const message = `Updated service user with _id "${data._id}"`
+      console.log(message)
+      return response.status(200).json({ success: true, result: user, message })
     } catch (error) { return response.status(500).json(handleServerError(error)) }
   }
 

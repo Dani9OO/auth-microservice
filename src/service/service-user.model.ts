@@ -16,4 +16,7 @@ export class ServiceUser {
 
   @prop({ type: () => VerificationToken, _id: false })
   public verificationToken?: VerificationToken
+
+  @prop({ default: false })
+  public disabled!: boolean
 }

@@ -11,6 +11,7 @@ import { Policy } from '../policy/policy.model'
 import { ServiceModel, ServiceUserModel } from '../common/models'
 import { randomBytes } from 'crypto'
 import { Types } from 'mongoose'
+import { UpdateServiceUserInput } from './service-user.inputs'
 
 export class ServiceController {
   public static queryServices = async () => {
@@ -156,5 +157,14 @@ export class ServiceController {
     const r = new Types.ObjectId(role)
     await ServiceUserModel.updateMany({ roles: r, service }, { $pull: { roles: r } })
     await ServiceModel.updateOne({ _id: service, defaultRoles: r }, { $pull: { defaultRoles: r } })
+  }
+
+  public static updateUser = async (user: UpdateServiceUserInput, service: string) => {
+    const u = await ServiceUserModel.findOne({ _id: user._id, service })
+    if (!u) throw new NotFoundError('Service user', { name: '_id', value: user._id! })
+    if (user.roles) u.roles = user.roles.map(r => new Types.ObjectId(r))
+    if (u.disabled !== user.disabled) u.disabled = user.disabled
+    await u.save()
+    return u
   }
 }
