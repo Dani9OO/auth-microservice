@@ -2,6 +2,7 @@ import { CreatePolicyInput, UpdatePolicyInput } from './policy.inputs'
 import { Types } from 'mongoose'
 import { NotFoundError } from '../common/errors/not-found.error'
 import { PolicyModel } from '../common/models'
+import { RoleController } from '../role/role.controller'
 export class PolicyController {
   public static getPolicies = async (service: string) => {
     return await PolicyModel.find({ service }).sort({ name: 'asc' })
@@ -21,7 +22,10 @@ export class PolicyController {
   }
 
   public static deletePolicy = async (_id: string, service: string) => {
-    return await PolicyModel.findOneAndDelete({ _id, service })
+    const p = await PolicyModel.findOneAndDelete({ _id, service })
+    if (!p) throw new NotFoundError('Policy', { name: '_id', value: _id })
+    await RoleController.cleanupRoles(_id, service)
+    return p
   }
 
   public static removePermissions = async (permissionIds: string[]) => {

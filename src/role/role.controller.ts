@@ -39,6 +39,13 @@ export class RoleController {
   }
 
   public static deleteRole = async (_id: string, service: string) => {
-    return await RoleModel.findOneAndDelete({ _id, service })
+    const role = await RoleModel.findOneAndDelete({ _id, service })
+    await ServiceController.cleanupServicesAndUsers(_id, service)
+    return role
+  }
+
+  public static cleanupRoles = async (policy: string, service: string) => {
+    const p = new Types.ObjectId(policy)
+    return await RoleModel.updateMany({ policies: p, service }, { $pull: { policies: p } })
   }
 }
