@@ -2,6 +2,7 @@ import { CreatePermissionInput, UpdatePermissionInput, GetPermissionsInput } fro
 import { ModuleController } from '../module/module.controller'
 import { PermissionModel } from '../common/models'
 import { PolicyController } from '../policy/policy.controller'
+import { NotFoundError } from '../common/errors/not-found.error'
 export class PermissionController {
   public static getPermissions = async (service: string, data: GetPermissionsInput) => {
     return data.module
@@ -21,10 +22,11 @@ export class PermissionController {
   }
 
   public static deletePermission = async (_id: string, service: string) => {
-    const m = await ModuleController.findModule(_id, service)
-    await ModuleController.removePermissionFromModule(m._id, _id)
+    const p = await PermissionModel.findOneAndDelete({ _id, service })
+    if (!p) throw new NotFoundError('Permission', { name: '_id', value: _id })
+    await ModuleController.removePermissionFromModule(p.module!.toString(), _id)
     await PolicyController.removePermissions([_id])
-    return await PermissionModel.findByIdAndDelete(_id)
+    return p
   }
 
   public static permissionCleanup = async (module: string, service: string) => {
