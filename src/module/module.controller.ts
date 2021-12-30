@@ -22,7 +22,11 @@ export class ModuleController {
   }
 
   public static updateModule = async (service: string, m: UpdateModuleInput) => {
-    return await ModuleModel.findOneAndUpdate({ _id: m._id, service }, { name: m.name })
+    const module = await ModuleModel.findOne({ _id: m._id, service })
+    if (!module) throw new NotFoundError('Module', { name: '_id', value: m._id! })
+    module.name = m.name
+    await module.save()
+    return module
   }
 
   public static deleteModule = async (service: string, _id: string) => {

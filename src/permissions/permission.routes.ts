@@ -54,7 +54,7 @@ export class PermissionRouting extends Routing {
       const data = plainToClass(UpdatePermissionInput, { ...request.body, ...request.params })
       const errors = await validate(data, { validationError: { target: false }, forbidUnknownValues: true })
       if (errors.length > 0) return response.status(400).json(handleValidationError(errors))
-      const p = await PermissionController.updatePermission(data)
+      const p = await PermissionController.updatePermission(data, request.service._id)
       const message = `Updated Permission with _id "${data._id}"`
       console.log(message)
       return response.status(200).json({ success: true, result: p, message })

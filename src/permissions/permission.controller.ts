@@ -17,8 +17,12 @@ export class PermissionController {
     return p.toObject()
   }
 
-  public static updatePermission = async (permission: UpdatePermissionInput) => {
-    return await PermissionModel.findByIdAndUpdate(permission._id, { name: permission.name })
+  public static updatePermission = async (permission: UpdatePermissionInput, service: string) => {
+    const p = await PermissionModel.findOne({ _id: permission._id!, service })
+    if (!p) throw new NotFoundError('Permission', { name: '_id', value: permission._id! })
+    p.name = permission.name
+    await p.save()
+    return p
   }
 
   public static deletePermission = async (_id: string, service: string) => {
