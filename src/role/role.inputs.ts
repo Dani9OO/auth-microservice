@@ -1,5 +1,5 @@
 import { IsString, IsNotEmpty, IsMongoId, IsOptional, IsBoolean } from 'class-validator'
-import MongoIdInput from '../common/validators/mongo-id.input'
+import MongoIdInput from '../common/validators/mongoid'
 export class CreateRoleInput {
   @IsString()
   @IsNotEmpty()
@@ -13,7 +13,7 @@ export class CreateRoleInput {
   public default!: boolean
 }
 
-export class UpdateRoleInput extends MongoIdInput {
+export class UpdateRoleInput extends MongoIdInput.Required {
   @IsOptional()
   @IsString()
   @IsNotEmpty()

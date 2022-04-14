@@ -8,8 +8,8 @@ export class RoleController {
     return await RoleModel.find({ service }).sort({ name: 'asc' })
   }
 
-  public static getRole = async (_id: string, service: string) => {
-    return await RoleModel.findOne({ _id, service }).populate({
+  public static getRole = async (id: string, service: string) => {
+    return await RoleModel.findOne({ id, service }).populate({
       path: 'policies',
       populate: {
         path: 'permissions',
@@ -21,12 +21,14 @@ export class RoleController {
   }
 
   public static createRole = async (role: CreateRoleInput, service: string) => {
-    return await RoleModel.create({ ...role, service })
+    const r = await RoleModel.create({ ...role, service })
+    if (role.default) ServiceController.addDefaultRole(service, r.id)
+    return r
   }
 
   public static updateRole = async (role: UpdateRoleInput, service: string) => {
-    const r = await RoleModel.findOne({ _id: role._id, service })
-    if (!r) throw new NotFoundError('Role', { name: '_id', value: role._id! })
+    const r = await RoleModel.findOne({ id: role.id, service })
+    if (!r) throw new NotFoundError('Role', { name: 'id', value: role.id! })
     if (role.policies) r.policies = role.policies.map(r => new Types.ObjectId(r))
     if (role.name && r.name !== role.name) r.name = role.name
     if (r.default !== role.default) {
@@ -38,9 +40,9 @@ export class RoleController {
     return r
   }
 
-  public static deleteRole = async (_id: string, service: string) => {
-    const role = await RoleModel.findOneAndDelete({ _id, service })
-    await ServiceController.cleanupServicesAndUsers(_id, service)
+  public static deleteRole = async (id: string, service: string) => {
+    const role = await RoleModel.findOneAndDelete({ id, service })
+    await ServiceController.cleanupServicesAndUsers(id, service)
     return role
   }
 

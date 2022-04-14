@@ -7,7 +7,7 @@ import { handleValidationError } from '../common/utils/handle-validation-error.u
 import { handleServerError } from '../common/utils/handle-server-error.util'
 import { PermissionController } from './permission.controller'
 import { auth } from '../common/middleware/auth-service.middleware'
-import MongoIdInput from '../common/validators/mongo-id.input'
+import MongoIdInput from '../common/validators/mongoid'
 export class PermissionRouting extends Routing {
   public readonly resource = 'Permission'
 
@@ -21,8 +21,8 @@ export class PermissionRouting extends Routing {
   private initRoutes () {
     this.router.get(`${this.path}s/`, auth, this.read)
     this.router.post(`${this.path}/`, auth, this.create)
-    this.router.put(`${this.path}/:_id`, auth, this.update)
-    this.router.delete(`${this.path}/:_id`, auth, this.delete)
+    this.router.put(`${this.path}/:id`, auth, this.update)
+    this.router.delete(`${this.path}/:id`, auth, this.delete)
   }
 
   private read = async (request: Request, response: Response) => {
@@ -30,7 +30,7 @@ export class PermissionRouting extends Routing {
       const data = plainToClass(GetPermissionsInput, request.query)
       const errors = await validate(data, { validationError: { target: false }, forbidUnknownValues: true })
       if (errors.length > 0) return response.status(400).json(handleValidationError(errors))
-      const permissions = await PermissionController.getPermissions(request.service._id, data)
+      const permissions = await PermissionController.getPermissions(request.service.id, data)
       const message = `Successfully queried ${permissions.length} Permissions`
       console.log(message)
       return response.status(200).json({ success: true, result: permissions, message })
@@ -42,7 +42,7 @@ export class PermissionRouting extends Routing {
       const data = plainToClass(CreatePermissionInput, request.body)
       const errors = await validate(data, { validationError: { target: false }, forbidUnknownValues: true })
       if (errors.length > 0) return response.status(400).json(handleValidationError(errors))
-      const p = await PermissionController.createPermission(data, request.service._id)
+      const p = await PermissionController.createPermission(data, request.service.id)
       const message = `Permission ${data.name} for module ${data.module} successfully created`
       console.log(message)
       return response.status(200).json({ success: true, result: p, message })
@@ -54,8 +54,8 @@ export class PermissionRouting extends Routing {
       const data = plainToClass(UpdatePermissionInput, { ...request.body, ...request.params })
       const errors = await validate(data, { validationError: { target: false }, forbidUnknownValues: true })
       if (errors.length > 0) return response.status(400).json(handleValidationError(errors))
-      const p = await PermissionController.updatePermission(data, request.service._id)
-      const message = `Updated Permission with _id "${data._id}"`
+      const p = await PermissionController.updatePermission(data, request.service.id)
+      const message = `Updated Permission with id "${data.id}"`
       console.log(message)
       return response.status(200).json({ success: true, result: p, message })
     } catch (error) { return response.status(500).json(handleServerError(error)) }
@@ -63,11 +63,11 @@ export class PermissionRouting extends Routing {
 
   private delete = async (request: Request, response: Response) => {
     try {
-      const data = plainToClass(MongoIdInput, request.params)
+      const data = plainToClass(MongoIdInput.Required, request.params)
       const errors = await validate(data, { validationError: { target: false }, forbidUnknownValues: true })
       if (errors.length > 0) return response.status(400).json(handleValidationError(errors))
-      const p = await PermissionController.deletePermission(data._id!, request.service._id)
-      const message = `Deleted Permission with _id "${data._id}"`
+      const p = await PermissionController.deletePermission(data.id!, request.service.id)
+      const message = `Deleted Permission with id "${data.id}"`
       console.log(message)
       return response.status(200).json({ success: true, result: p, message })
     } catch (error) { return response.status(500).json(handleServerError(error)) }

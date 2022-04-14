@@ -5,7 +5,7 @@ import { validate } from 'class-validator'
 import { auth } from '../common/middleware/auth-service.middleware'
 import { handleServerError } from '../common/utils/handle-server-error.util'
 import { handleValidationError } from '../common/utils/handle-validation-error.util'
-import MongoIdInput from '../common/validators/mongo-id.input'
+import MongoIdInput from '../common/validators/mongoid'
 import { RoleController } from './role.controller'
 import { CreateRoleInput, UpdateRoleInput } from './role.inputs'
 import { NotFoundError } from '../common/errors/not-found.error'
@@ -22,9 +22,9 @@ export class RoleRouting extends Routing {
   private initRoutes () {
     this.router.post(`${this.path}/`, auth, this.create)
     this.router.get(`${this.path}s/`, auth, this.read)
-    this.router.get(`${this.path}/:_id`, auth, this.details)
-    this.router.put(`${this.path}/:_id`, auth, this.update)
-    this.router.delete(`${this.path}/:_id`, auth, this.delete)
+    this.router.get(`${this.path}/:id`, auth, this.details)
+    this.router.put(`${this.path}/:id`, auth, this.update)
+    this.router.delete(`${this.path}/:id`, auth, this.delete)
   }
 
   private create = async (request: Request, response: Response) => {
@@ -32,7 +32,7 @@ export class RoleRouting extends Routing {
       const data = plainToClass(CreateRoleInput, request.body)
       const errors = await validate(data, { validationError: { target: false }, forbidUnknownValues: true })
       if (errors.length > 0) return response.status(400).json(handleValidationError(errors))
-      const role = await RoleController.createRole(data, request.service._id)
+      const role = await RoleController.createRole(data, request.service.id)
       const message = `Role ${data.name} successfully created`
       console.log(message)
       return response.status(200).json({ success: true, result: role, message })
@@ -41,7 +41,7 @@ export class RoleRouting extends Routing {
 
   private read = async (request: Request, response: Response) => {
     try {
-      const roles = await RoleController.getRoles(request.service._id)
+      const roles = await RoleController.getRoles(request.service.id)
       const message = `Successfully queried ${roles.length} Roles`
       console.log(message)
       return response.status(200).json({ success: true, result: roles, message })
@@ -50,12 +50,12 @@ export class RoleRouting extends Routing {
 
   private details = async (request: Request, response: Response) => {
     try {
-      const data = plainToClass(MongoIdInput, request.params)
+      const data = plainToClass(MongoIdInput.Required, request.params)
       const errors = await validate(data, { validationError: { target: false }, forbidUnknownValues: true })
       if (errors.length > 0) return response.status(400).json(handleValidationError(errors))
-      const role = await RoleController.getRole(data._id!, request.service._id)
-      if (!role) return response.status(404).json(new NotFoundError(this.resource, { name: '_id', value: data._id! }).respond())
-      const message = `Successfully queried ${this.resource} with _id "${data._id}"`
+      const role = await RoleController.getRole(data.id!, request.service.id)
+      if (!role) return response.status(404).json(new NotFoundError(this.resource, { name: 'id', value: data.id! }).respond())
+      const message = `Successfully queried ${this.resource} with id "${data.id}"`
       console.log(message)
       return response.status(200).json({ success: true, result: role, message })
     } catch (error) { return response.status(500).json(handleServerError(error)) }
@@ -66,8 +66,8 @@ export class RoleRouting extends Routing {
       const data = plainToClass(UpdateRoleInput, { ...request.body, ...request.params })
       const errors = await validate(data, { validationError: { target: false }, forbidUnknownValues: true })
       if (errors.length > 0) return response.status(400).json(handleValidationError(errors))
-      const role = await RoleController.updateRole(data, request.service._id)
-      const message = `Updated Role with _id "${data._id}"`
+      const role = await RoleController.updateRole(data, request.service.id)
+      const message = `Updated Role with id "${data.id}"`
       console.log(message)
       return response.status(200).json({ success: true, result: role, message })
     } catch (error) { return response.status(500).json(handleServerError(error)) }
@@ -75,11 +75,11 @@ export class RoleRouting extends Routing {
 
   private delete = async (request: Request, response: Response) => {
     try {
-      const data = plainToClass(MongoIdInput, request.params)
+      const data = plainToClass(MongoIdInput.Required, request.params)
       const errors = await validate(data, { validationError: { target: false }, forbidUnknownValues: true })
       if (errors.length > 0) return response.status(400).json(handleValidationError(errors))
-      const role = await RoleController.deleteRole(data._id!, request.service._id)
-      const message = `Deleted Role with _id "${data._id}"`
+      const role = await RoleController.deleteRole(data.id!, request.service.id)
+      const message = `Deleted Role with id "${data.id}"`
       console.log(message)
       return response.status(200).json({ success: true, result: role, message })
     } catch (error) { return response.status(500).json(handleServerError(error)) }

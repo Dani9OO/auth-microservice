@@ -13,18 +13,18 @@ export class PolicyController {
   }
 
   public static updatePolicy = async (policy: UpdatePolicyInput, service: string) => {
-    const p = await PolicyModel.findOne({ _id: policy._id, service })
-    if (!p) throw new NotFoundError('Policy', { name: '_id', value: policy._id! })
+    const p = await PolicyModel.findOne({ id: policy.id, service })
+    if (!p) throw new NotFoundError('Policy', { name: 'id', value: policy.id! })
     if (policy.permissions) p.permissions = policy.permissions.map(p => new Types.ObjectId(p))
     if (policy.name && p.name !== policy.name) p.name = policy.name
     await p.save()
     return p
   }
 
-  public static deletePolicy = async (_id: string, service: string) => {
-    const p = await PolicyModel.findOneAndDelete({ _id, service })
-    if (!p) throw new NotFoundError('Policy', { name: '_id', value: _id })
-    await RoleController.cleanupRoles(_id, service)
+  public static deletePolicy = async (id: string, service: string) => {
+    const p = await PolicyModel.findOneAndDelete({ id, service })
+    if (!p) throw new NotFoundError('Policy', { name: 'id', value: id })
+    await RoleController.cleanupRoles(id, service)
     return p
   }
 

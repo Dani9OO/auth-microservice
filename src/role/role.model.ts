@@ -1,7 +1,9 @@
-import { prop, Ref } from '@typegoose/typegoose'
+import { modelOptions, prop, Ref } from '@typegoose/typegoose'
+import { schemaOptions } from '../common/constants/schema-options'
 import { Policy } from '../policy/policy.model'
 import { Service } from '../service/service.model'
 
+@modelOptions({ schemaOptions })
 export class Role {
   @prop({ ref: () => Service, required: true })
   public service!: Ref<Service>

@@ -1,4 +1,5 @@
-import { prop, Ref } from '@typegoose/typegoose'
+import { modelOptions, prop, Ref } from '@typegoose/typegoose'
+import { schemaOptions } from '../common/constants/schema-options'
 import { Role } from '../role/role.model'
 import { ServiceUser } from './service-user.model'
 
@@ -9,6 +10,7 @@ class ApiKey {
   @prop()
   public key!: string
 }
+@modelOptions({ schemaOptions })
 export class Service {
   @prop({ unique: true })
   public name!: string

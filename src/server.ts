@@ -10,9 +10,12 @@ import { PolicyRouting } from './policy/policy.routes'
 import { RoleRouting } from './role/role.routes'
 import { ServiceRouting } from './service/service.routes'
 import { UserRouting } from './user/user.routes'
+import { init } from './common/functions/init.function'
 
 (async () => {
   const env = validateEnvironment()
+
+  await init(env.passphrase)
 
   const database = new Database()
   await database.init(env.db.uri)

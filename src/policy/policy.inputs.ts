@@ -1,5 +1,5 @@
 import { IsString, IsNotEmpty, IsMongoId, IsOptional } from 'class-validator'
-import MongoIdInput from '../common/validators/mongo-id.input'
+import MongoIdInput from '../common/validators/mongoid'
 export class CreatePolicyInput {
   @IsString()
   @IsNotEmpty()
@@ -9,7 +9,7 @@ export class CreatePolicyInput {
   public permissions!: string[]
 }
 
-export class UpdatePolicyInput extends MongoIdInput {
+export class UpdatePolicyInput extends MongoIdInput.Required {
   @IsOptional()
   @IsString()
   @IsNotEmpty()

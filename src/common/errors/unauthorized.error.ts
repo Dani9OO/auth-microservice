@@ -5,7 +5,7 @@ export class UnauthorizedError extends ResponseError {
     public service: string
   ) {
     super(
-      `User with _id "${user}" has not yet registered to service "${service}"`,
+      `User with id "${user}" has not yet registered to service "${service}"`,
       'You have not yet registered to this service'
     )
     console.error(this)

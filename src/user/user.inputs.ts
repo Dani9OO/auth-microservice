@@ -1,21 +1,22 @@
 import { IsEmail, IsNotEmpty, IsString, Matches } from 'class-validator'
 import { User } from './user.model'
-import { securePassword } from '../common/constants/secure-password.regexp'
+import { securePassword, username, diacriticPhrase, diacriticWord } from '../common/constants/regular-expressions'
+import MongoIdInput from '../common/validators/mongoid/index'
 
 export class CreateUserInput implements Partial<User> {
   @IsEmail()
   public email!: string
 
   @IsString()
-  @IsNotEmpty()
+  @Matches(diacriticWord)
   public forename!: string
 
   @IsString()
-  @IsNotEmpty()
+  @Matches(diacriticPhrase)
   public surname!: string
 
   @IsString()
-  @IsNotEmpty()
+  @Matches(username)
   public username!: string
 
   @Matches(securePassword)
@@ -30,16 +31,18 @@ export class AuthenticateUserInput {
   public password!: string
 }
 
-export class ForgotPasswordInput {
+export class ForgotPasswordInput extends MongoIdInput.Required {
   @IsEmail()
   public email!: string
 }
 
-export class ResetPasswordInput {
+export class TokenInput extends MongoIdInput.Required {
   @IsString()
   @IsNotEmpty()
   public token!: string
+}
 
+export class ResetPasswordInput extends TokenInput {
   @Matches(securePassword)
   public password!: string
 }

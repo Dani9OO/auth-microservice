@@ -9,9 +9,9 @@ import { ResponseError } from '../common/errors/response.error'
 import { isDocumentArray, DocumentType, isDocument } from '@typegoose/typegoose'
 import { Policy } from '../policy/policy.model'
 import { ServiceModel, ServiceUserModel } from '../common/models'
-import { randomBytes } from 'crypto'
 import { Types } from 'mongoose'
 import { UpdateServiceUserInput } from './service-user.inputs'
+import { DuplicatedError } from '../common/errors/duplicated.error'
 
 export class ServiceController {
   public static queryServices = async () => {
@@ -46,7 +46,7 @@ export class ServiceController {
       chmod(paths.passphrase, 0o700),
       chmod(paths.api, 0o700)
     ])
-    return { _id: s._id, apiKey, passphrase, publicKey }
+    return s
   }
 
   public static authToService = async (service: string) => {
@@ -60,8 +60,10 @@ export class ServiceController {
     return prefix
   }
 
-  public static findServiceById = async (_id: string) => {
-    return await ServiceModel.findById(_id)
+  public static findServiceById = async (id: string) => {
+    const s = await ServiceModel.findById(id)
+    if (!s) throw new NotFoundError('Service', { name: 'id', value: id })
+    return s
   }
 
   public static findServiceByPrefix = async (prefix: string) => {
@@ -69,14 +71,16 @@ export class ServiceController {
   }
 
   public static addUserToService = async (user: string, service: string) => {
+    const exists = await ServiceUserModel.findOne({ user: user })
+    if (exists) throw new DuplicatedError('User', { name: 'id', value: user! })
     const s = await ServiceModel.findById(service)
-    if (!s) throw new NotFoundError('Service', { name: '_id', value: service })
+    if (!s) throw new NotFoundError('Service', { name: 'id', value: service })
     const u = new ServiceUserModel({ user, roles: s.defaultRoles, service })
-    if (!s.users) s.users = [u.id]; else s.users.push(u.id)
+    if (!s.users) s.users = [u.id]
+    else s.users.push(u.id)
     await s.save()
-    u.verificationToken = { token: randomBytes(40).toString('hex') }
     await u.save()
-    return { user: u, service: s, token: u.verificationToken.token }
+    return { user: u, service: s }
   }
 
   public static removeUserFromService = async (user: string, service: string) => {
@@ -86,9 +90,9 @@ export class ServiceController {
     return u.toObject()
   }
 
-  public static validateDefaultRolesExist = async (_id: string) => {
-    const service = await ServiceModel.findById(_id)
-    if (!service) throw new NotFoundError('Service', { name: '_id', value: _id })
+  public static validateDefaultRolesExist = async (id: string) => {
+    const service = await ServiceModel.findById(id)
+    if (!service) throw new NotFoundError('Service', { name: 'id', value: id })
     if (!service.defaultRoles || !(service.defaultRoles.length > 0)) throw new ResponseError('Default service roles must be defined before registering an user')
   }
 
@@ -110,7 +114,7 @@ export class ServiceController {
     if (isDocumentArray(u.roles)) {
       u.roles.forEach(r => {
         if (isDocumentArray(r.policies)) {
-          r.policies.forEach(p => { if (!policiesWithNoDuplicates[p._id]) policiesWithNoDuplicates[p._id] = p })
+          r.policies.forEach(p => { if (!policiesWithNoDuplicates[p.id]) policiesWithNoDuplicates[p.id] = p })
         }
       })
     }
@@ -127,41 +131,31 @@ export class ServiceController {
     return permissions
   }
 
-  public static verifyEmail = async (service: string, token: string) => {
-    const serviceUser = await ServiceUserModel.findOne({ service, 'verificationToken.token': token }).populate('user')
-    if (!serviceUser) throw new NotFoundError('Service user', { name: 'token', value: token })
-    serviceUser.verificationToken!.verified = new Date()
-    delete serviceUser.verificationToken!.token
-    await serviceUser.save()
-    if (!isDocument(serviceUser.user)) throw new ResponseError('Couldn\'t populate user')
-    return serviceUser.user.email
-  }
-
   public static addDefaultRole = async (service: string, role: string) => {
     const s = await ServiceModel.findByIdAndUpdate(service, { $addToSet: { defaultRoles: role } })
-    if (!s) throw new NotFoundError('Service', { name: '_id', value: service })
+    if (!s) throw new NotFoundError('Service', { name: 'id', value: service })
   }
 
   public static removeDefaultRole = async (service: string, role: string) => {
     const s = await ServiceModel.findByIdAndUpdate(service, { $pull: { defaultRoles: role } })
-    if (!s) throw new NotFoundError('Service', { name: '_id', value: service })
+    if (!s) throw new NotFoundError('Service', { name: 'id', value: service })
   }
 
   public static getUsers = async (service: string) => {
     const users = await ServiceUserModel.find({ service }).populate('user')
-    if (!users) throw new NotFoundError('Service user', { name: '_id', value: service })
+    if (!users) throw new NotFoundError('Service user', { name: 'id', value: service })
     return users
   }
 
   public static cleanupServicesAndUsers = async (role: string, service: string) => {
     const r = new Types.ObjectId(role)
     await ServiceUserModel.updateMany({ roles: r, service }, { $pull: { roles: r } })
-    await ServiceModel.updateOne({ _id: service, defaultRoles: r }, { $pull: { defaultRoles: r } })
+    await ServiceModel.updateOne({ id: service, defaultRoles: r }, { $pull: { defaultRoles: r } })
   }
 
   public static updateUser = async (user: UpdateServiceUserInput, service: string) => {
-    const u = await ServiceUserModel.findOne({ _id: user._id, service })
-    if (!u) throw new NotFoundError('Service user', { name: '_id', value: user._id! })
+    const u = await ServiceUserModel.findOne({ id: user.id, service })
+    if (!u) throw new NotFoundError('Service user', { name: 'id', value: user.id! })
     if (user.roles) u.roles = user.roles.map(r => new Types.ObjectId(r))
     if (u.disabled !== user.disabled) u.disabled = user.disabled
     await u.save()

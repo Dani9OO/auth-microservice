@@ -14,7 +14,7 @@ export class CreateModuleInput {
 
 export class UpdateModuleInput {
   @IsMongoId()
-  public _id?: string
+  public id?: string
 
   @IsOptional()
   @IsString()

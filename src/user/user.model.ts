@@ -1,13 +1,10 @@
-import { prop, Ref, modelOptions } from '@typegoose/typegoose'
+import { modelOptions, prop, Ref } from '@typegoose/typegoose'
 import { ResetToken } from './reset-token.model'
 import { Service } from '../service/service.model'
+import { VerificationToken } from './verification-token.model'
+import { schemaOptions } from '../common/constants/schema-options'
 
-@modelOptions({
-  schemaOptions: {
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true }
-  }
-})
+@modelOptions({ schemaOptions })
 export class User {
   @prop()
   public forename!: string
@@ -24,7 +21,7 @@ export class User {
   @prop()
   public password!: string
 
-  @prop({ type: () => ResetToken, _id: false })
+  @prop({ type: () => ResetToken, id: false })
   public resetToken?: ResetToken
 
   @prop({ default: Date.now() })
@@ -35,6 +32,9 @@ export class User {
 
   @prop({ ref: () => Service })
   public services!: Ref<Service>[]
+
+  @prop({ type: () => VerificationToken, id: false })
+  public verification!: VerificationToken
 
   public get identity () {
     return {

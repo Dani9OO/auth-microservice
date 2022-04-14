@@ -1,6 +1,8 @@
-import { prop, Ref } from '@typegoose/typegoose'
+import { modelOptions, prop, Ref } from '@typegoose/typegoose'
+import { schemaOptions } from '../common/constants/schema-options'
 import { User } from './user.model'
 
+@modelOptions({ schemaOptions })
 export class RefreshToken {
   @prop({ ref: () => User, required: true })
   public user!: Ref<User>

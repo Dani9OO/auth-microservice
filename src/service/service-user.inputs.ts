@@ -1,7 +1,7 @@
 import { IsOptional, IsMongoId, IsBoolean } from 'class-validator'
-import MongoIdInput from '../common/validators/mongo-id.input'
+import MongoIdInput from '../common/validators/mongoid'
 
-export class UpdateServiceUserInput extends MongoIdInput {
+export class UpdateServiceUserInput extends MongoIdInput.Required {
   @IsOptional()
   @IsMongoId({ each: true })
   public roles?: string[]

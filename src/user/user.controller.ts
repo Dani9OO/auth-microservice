@@ -9,23 +9,19 @@ import { randomBytes } from 'crypto'
 import { UserModel, RefreshTokenModel } from '../common/models'
 import { ResponseError } from '../common/errors/response.error'
 import { isDocument } from '@typegoose/typegoose'
+import { DuplicatedError } from '../common/errors/duplicated.error'
 export class UserController {
   public static createUser = async (user: CreateUserInput, service: string) => {
-    await ServiceController.validateDefaultRolesExist(service)
     const u = await UserModel.findOne({ email: user.email })
-    if (!u) {
-      user.password = await hash(user.password)
-      const newUser = await UserModel.create({ ...user, services: [service] })
-      const { user: serviceUser, service: s, token } = await ServiceController.addUserToService(newUser.id, service)
-      return { user: newUser.identity, service: { id: s.id, name: s.name, user: serviceUser.id, token } }
-    } else {
-      const { user: serviceUser, service: s, token } = await ServiceController.addUserToService(u.id, service)
-      return { user: u.identity, service: { id: s.id, name: s.name, user: serviceUser.id, token } }
-    }
+    if (!u) throw new DuplicatedError('User', { name: 'email', value: user.email })
+    user.password = await hash(user.password)
+    const newUser = await UserModel.create({ ...user, services: [service], verification: { token: randomBytes(40).toString('hex') } })
+    const { user: serviceUser, service: s } = await ServiceController.addUserToService(newUser.id, service)
+    return { user: newUser.identity, service: { id: s.id, name: s.name, user: serviceUser.id, token: newUser.verification.token } }
   }
 
-  public static findUserById = async (_id: string) => {
-    return await UserModel.findById(_id)
+  public static findUserById = async (id: string) => {
+    return await UserModel.findById(id)
   }
 
   public static findRefreshToken = async (user: string, token: string) => {
@@ -49,10 +45,10 @@ export class UserController {
     return sign(payload, { key, passphrase }, { expiresIn: '1h', algorithm: 'RS256' })
   }
 
-  public static generateRefreshToken = async (_id: string, ip: string) => {
+  public static generateRefreshToken = async (id: string, ip: string) => {
     const expires = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
     const rt = await RefreshTokenModel.create({
-      user: _id,
+      user: id,
       token: randomBytes(40).toString('hex'),
       expires,
       createdByIp: ip
@@ -81,7 +77,12 @@ export class UserController {
   }
 
   public static verifyEmail = async (service: string, token: string) => {
-    return await ServiceController.verifyEmail(service, token)
+    const user = await UserModel.findOne({ 'verificationToken.token': token })
+    if (!user) throw new NotFoundError('User', { name: 'token', value: token })
+    user.verification!.verified = new Date()
+    delete user.verification!.token
+    await user.save()
+    return user.email
   }
 
   public static forgotPassword = async (user: ForgotPasswordInput) => {
@@ -99,5 +100,9 @@ export class UserController {
     delete u.resetToken
     await u.save()
     return u.email
+  }
+
+  public static authorizeService = async (user: string, service: string) => {
+    await ServiceController.addUserToService(user, service)
   }
 }

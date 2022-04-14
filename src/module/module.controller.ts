@@ -8,30 +8,30 @@ export class ModuleController {
   }
 
   public static findModule = async (m: string, service: string) => {
-    const moduleDoc = await ModuleModel.findOne({ _id: m, service })
-    if (!moduleDoc) throw new NotFoundError('Module', { name: '_id', value: m })
+    const moduleDoc = await ModuleModel.findOne({ id: m, service })
+    if (!moduleDoc) throw new NotFoundError('Module', { name: 'id', value: m })
     return moduleDoc
   }
 
   public static createModule = async (service: string, m: CreateModuleInput) => {
     const moduleDoc = await ModuleModel.create({ service, name: m.name })
     const permissions = await Promise.all(m.permissions.map(p => PermissionController.createPermission({ module: moduleDoc.id, name: p }, service, true)))
-    moduleDoc.permissions = permissions.map(p => p._id)
+    moduleDoc.permissions = permissions.map(p => p.id)
     await moduleDoc.save()
     return moduleDoc
   }
 
   public static updateModule = async (service: string, m: UpdateModuleInput) => {
-    const module = await ModuleModel.findOne({ _id: m._id, service })
-    if (!module) throw new NotFoundError('Module', { name: '_id', value: m._id! })
+    const module = await ModuleModel.findOne({ id: m.id, service })
+    if (!module) throw new NotFoundError('Module', { name: 'id', value: m.id! })
     module.name = m.name
     await module.save()
     return module
   }
 
-  public static deleteModule = async (service: string, _id: string) => {
-    await PermissionController.permissionCleanup(_id, service)
-    return await ModuleModel.findOneAndDelete({ _id, service })
+  public static deleteModule = async (service: string, id: string) => {
+    await PermissionController.permissionCleanup(id, service)
+    return await ModuleModel.findOneAndDelete({ id, service })
   }
 
   public static addPermissionToModule = async (m: string, permission: string) => {

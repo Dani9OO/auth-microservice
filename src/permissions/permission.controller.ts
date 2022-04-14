@@ -18,24 +18,24 @@ export class PermissionController {
   }
 
   public static updatePermission = async (permission: UpdatePermissionInput, service: string) => {
-    const p = await PermissionModel.findOne({ _id: permission._id!, service })
-    if (!p) throw new NotFoundError('Permission', { name: '_id', value: permission._id! })
+    const p = await PermissionModel.findOne({ id: permission.id!, service })
+    if (!p) throw new NotFoundError('Permission', { name: 'id', value: permission.id! })
     p.name = permission.name
     await p.save()
     return p
   }
 
-  public static deletePermission = async (_id: string, service: string) => {
-    const p = await PermissionModel.findOneAndDelete({ _id, service })
-    if (!p) throw new NotFoundError('Permission', { name: '_id', value: _id })
-    await ModuleController.removePermissionFromModule(p.module!.toString(), _id)
-    await PolicyController.removePermissions([_id])
+  public static deletePermission = async (id: string, service: string) => {
+    const p = await PermissionModel.findOneAndDelete({ id, service })
+    if (!p) throw new NotFoundError('Permission', { name: 'id', value: id })
+    await ModuleController.removePermissionFromModule(p.module!.toString(), id)
+    await PolicyController.removePermissions([id])
     return p
   }
 
   public static permissionCleanup = async (module: string, service: string) => {
-    const permissions = (await PermissionModel.find({ module, service })).map(p => p._id)
-    await PermissionModel.deleteMany({ _id: permissions })
+    const permissions = (await PermissionModel.find({ module, service })).map(p => p.id)
+    await PermissionModel.deleteMany({ id: permissions })
     await PolicyController.removePermissions(permissions)
   }
 }
